@@ -2,13 +2,10 @@ Synth keyboard scanner
 
 
 Arduino nano:
- Pins d2 - d9 = 8-way input
- Pins d10-d13, a0-a3 = 8-way output - each pin (driven low) scans a set of 8 keys
-     ==> up to 64 keys (60 key keyboard plus 4 switches)
- Alternatively, use pins d10-d12 to drive a 3-to-8-way demux chip (74138?)
-     ==> could use d13 to select 1 of 2 demux chips to increase range
-
- Can also use d2-d9 as data bus to a latch for driving 8 LEDs. Use another pin (or a demux line) to latch.
+ Pins d5 - d12 = 8-way input
+ Pins d2i -d4  = a0-a2to a 74HC138 one-of-8 decoder. Each output (driven low) scans a set of 8 keys
+     ==> up to 64 keys
+     ==> keyboard has 44 keys (6 rows, one row has only 4 keys)
 
  Use any remaining A pins for potentiometers (pitch bend etc.)
 

@@ -57,10 +57,13 @@ const unsigned char scanline[3] =
 const unsigned char rtnline[kbd_nrtn] =
 {	rtn_0, rtn_1, rtn_2, rtn_3, rtn_4, rtn_5, rtn_6, rtn_7	};
 
-/* Timed processing
-*/
-unsigned long then;
-char ledState;
+struct keystate_s
+{
+	unsigned char state;
+	unsigned char count;
+};
+
+keystate_s keystate[64];
 
 /* setup() - standard Arduino "Init Task"
 */
@@ -70,7 +73,6 @@ void setup(void)
 
 	pinMode(led1, OUTPUT);				// Sets the digital pin as output
 	digitalWrite(led1, LOW);			// Drive the pin low (LED off)
-	ledState = 0;
 
 	for ( i = 0; i < 3; i++ )
 	{
@@ -80,66 +82,124 @@ void setup(void)
 	for ( i = 0; i < kbd_nrtn; i++ )
 		pinMode(rtnline[i], INPUT_PULLUP);
 
+	for ( i = 0; i < 64; i++ )
+	{
+		keystate[i].state = 0;
+		keystate[i].count = 0;
+	}
+
 	Serial.begin(9600);					// Start the serial port.
+	Serial.println("Hello world");
 }
 
 /* loop() - standard Arduino "Background Task"
 */
 void loop(void)
 {
-	unsigned long now = millis();
-	unsigned long elapsed = now - then;
+	unsigned scan = 7;
+	unsigned rtn = 7;
+	int ledCount = 100;
+	int ledState = 0;
+	unsigned long then;
 
-	if ( ledState )
+	then = millis();
+
+	for (;;)
 	{
-		/* LED stays on for 20 ms
-		*/
-		if ( elapsed > 20 )
-		{
-			then += 20;
-			ledState = 0;
-			digitalWrite(led1, LOW);
-		}
-	}
-	else
-	{
-		/* LED stays off for 2 secs minus 20 ms
-		*/
-		if ( elapsed >= 1980 )
-		{
-			then += 1980;
-			ledState = 1;
-			digitalWrite(led1, HIGH);
-		}
-	}
+		do {
+		} while ( (millis() - then) < 10 );
 
-	if ( elapsed > 10 )
-	{
-		int scan, rtn, npress = 0;
+		then += 10;
 
-		for ( scan = 0; scan < kbd_nscan; scan++ )
+		ledCount--;
+		if ( ledCount <= 0 )
 		{
-			digitalWrite(scanline[0], (scan & 0x01) == 0 ? LOW : HIGH);
-			digitalWrite(scanline[0], (scan & 0x02) == 0 ? LOW : HIGH);
-			digitalWrite(scanline[0], (scan & 0x04) == 0 ? LOW : HIGH);
-
-			for ( rtn = 0; rtn < kbd_nrtn; rtn++ )
+			if ( ledState )
 			{
-				if ( digitalRead(rtnline[i]) == LOW )
-				{
-					// Key pressed.
-					npress++;
-					Serial.print('A'+scan);
-					Serial.print('0'+rtn);
-					Serial.print(' ');
-				}
-				else
-				{
-					// Key not pressed.
-				}
+				digitalWrite(led1, LOW);
+				ledState = 0;
+				ledCount = 98;
+			}
+			else
+			{
+				digitalWrite(led1, HIGH);
+				ledState = 1;
+				ledCount = 2;
 			}
 		}
-		if (npress > 0 )
-			Serial.println('!');
+
+#if 0
+		if ( Serial.read() >= 0 )
+		{
+			scan++;
+			if ( scan > 7 )
+				scan = 0;
+			digitalWrite(scanline[0], (scan & 0x01) == 0 ? LOW : HIGH);
+			digitalWrite(scanline[1], (scan & 0x02) == 0 ? LOW : HIGH);
+			digitalWrite(scanline[2], (scan & 0x04) == 0 ? LOW : HIGH);
+			Serial.print("Scan ");
+			char c = '0'+scan;
+			Serial.print(c);
+			Serial.println("");
+		}
+#endif
+
+#if 1
+		{
+			unsigned scan, rtn, npress = 0;
+
+			for ( scan = 0; scan < kbd_nscan; scan++ )
+			{
+				digitalWrite(scanline[0], (scan & 0x01) == 0 ? LOW : HIGH);
+				digitalWrite(scanline[1], (scan & 0x02) == 0 ? LOW : HIGH);
+				digitalWrite(scanline[2], (scan & 0x04) == 0 ? LOW : HIGH);
+
+				for ( rtn = 0; rtn < kbd_nrtn; rtn++ )
+				{
+					unsigned idx = scan*8 + rtn;
+
+					if ( keystate[idx].count > 0 )
+						keystate[idx].count--;			// Ignore keys whose count is non-zero
+					else
+					if ( digitalRead(rtnline[rtn]) == LOW )
+					{
+						// Key down
+						if ( keystate[idx].state == 0 )
+						{
+							// Pressed
+							keystate[idx].state = 1;
+							keystate[idx].count = 2;		// 20 ms
+
+							npress++;
+							char c = 'A'+scan;
+							Serial.print(c);
+							c = '0'+rtn;
+							Serial.print(c);
+							Serial.print(' ');
+						}
+					}
+					else
+					{
+						// Key up
+						if ( keystate[idx].state == 1 )
+						{
+							// Released
+							keystate[idx].state = 0;
+							keystate[idx].count = 2;		// 20 ms
+
+							npress++;
+							char c = 'a'+scan;
+							Serial.print(c);
+							c = '0'+rtn;
+							Serial.print(c);
+							Serial.print(' ');
+						}
+					}
+				}
+			}
+			if ( npress > 0 )
+				Serial.println('!');
+		}
+#endif
 	}
 }
