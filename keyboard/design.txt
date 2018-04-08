@@ -2,26 +2,33 @@ Synth keyboard scanner
 
 
 Arduino nano:
- Pins d5 - d12 = 8-way input
- Pins d2i -d4  = a0-a2to a 74HC138 one-of-8 decoder. Each output (driven low) scans a set of 8 keys
+ 3 output pins to pins a0-a2 of a 74HCT138 one-of-8 decoder. Each output (driven low) scans a set of 8 keys
+ 3 output pins to pins s0-s2 of a 74HCT354 one-of-8 data selector.
+ 1 output pin to the OE pin of the 74HCT354
+ 1 input pin from the data out (Y) pin of the 74HCT354
      ==> up to 64 keys
      ==> keyboard has 44 keys (6 rows, one row has only 4 keys)
 
- Use any remaining A pins for potentiometers (pitch bend etc.)
-
  scan code
-
-	foreach column 0..COLMAX
-		set column drive low
-		wait settling time
-		for each row 0..ROWMAX
-			read row input
-			if row key pressed (input=0)
-				if keycount[column,row] < max
-					keycount[column,row]++
-					if keycount[column,row] >= max
-						sendkeydown(column,row)
-			else
-				if keycount[column,row] >= max
-					sendkeyup(column, row)
-                keycount[column,row] = 0
+	forever
+		timing delay() --- scan every 10 ms
+		set kscan_en HIGH to enable data from keyboard scan
+		foreach column 0..COLMAX
+			output the column number ('138 a0-a2) to drive the column enable low
+			for each row 0..ROWMAX
+				output the row number ('354 s0-s2) to select the row
+				calculate key index
+	            if key's counter is >0, decrement it and ignore the key
+				else
+					read the key state
+					if state is LOW (pressed)
+						if stored keystate is 0
+							set stored state to 1
+							set key's count to 20 ms
+							send key press event
+					else
+						if stored keystate is 1
+							set stored state to 0
+							set key's count to 20 ms
+							send key release event
+		set kscan_en LOW to switch '354 output to 3-state

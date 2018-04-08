@@ -1,31 +1,55 @@
-|TX1|1|SPI|30|Vin||Pin|Main|Alt|Project use
-|RX0|2||29|GND||1|TX1||
-|RESET|3||28|PC6||2|RX0||
-|GND|4||27|5v||3|RESET||
-|PD2|5||26|ADC7||4|GND||
-|PD3|6||25|ADC6||5|PD2||
-|PD4|7||24|PC5||6|PD3||
-|PD5|8||23|PC4||7|PD4||
-|PD6|9||22|PC3||8|PD5||
-|PD7|10||21|PC2||9|PD6||
-|PB0|11||20|PC1||10|PD7||
-|PB1|12||19|PC0||11|PB0||
-|PB2|13||18|Aref||12|PB1||
-|PB3|14||17|3v3||13|PB2||
-|PB4|15|USB|16|PB5||14|PB3||
-|||||||15|PB4||
-|||||||16|PB5||
-|||||||17|3v3||
-|||||||18|Aref||
-|||||||19|PC0||
-|||||||20|PC1||
-|||||||21|PC2||
-|||||||22|PC3||
-|||||||23|PC4||
-|||||||24|PC5||
-|||||||25|ADC6||
-|||||||26|ADC7||
-|||||||27|5v||
-|||||||28|PC6||
-|||||||29|GND||
-|||||||30|Vin||
+,,,,,,,,,,,,,
+,Pin,Main,Port no.,Alt,Project use,,,,,,74HCT138,,
+,1,TX1,D1,PD1/TxD,Tx,,,,,1,A0,data_out_0,from arduino
+,2,RX0,D0,PD0/RxD,Rx,,,,,2,A1,data_out_1,from arduino
+,3,RESET,,PC6/Reset,,,,,,3,A2,data_out_2,from arduino
+,4,GND,,,,,,,,4,E1\,gnd,
+,5,PD2,D2,PD2/INT0,,,,,,5,E2\,gnd,
+,6,PD3,D3,PD3/INT1/PWM/OC2B,,,,,,6,E3,vcc,
+,7,PD4,D4,PD4/T0/XCK,,,,,,7,Y7\,kbd scan,
+,8,PD5,D5,PD5/T1/OC0B/PWM,,,,,,8,Gnd,Gnd,
+,9,PD6,D6,PD6/AIN0/OC0A/PWM,,,,,,9,Y6\,kbd scan,
+,10,PD7,D7,PD7/AIN1,data_out_7,,,,,10,Y5\,kbd scan,
+,11,PB0,D8,PB0/CLK0/ICP1,data_out_6,,,,,11,Y4\,kbd scan,
+,12,PB1,D9,PB1/OC1A/PWM,,,,,,12,Y3\,kbd scan,
+,13,PB2,D10,PB2/OC1B/SS/PWM,,,,,,13,Y2\,kbd scan,
+,14,PB3,D11,PB3/OC2/MOSI/PWM,,,,,,14,Y1\,kbd scan,
+,15,PB4,D12,PB4/MISO,data_in,to Y pin of 74hct354,,,,15,Y0\,kbd scan,
+,16,PB5,D13,PB5/SCK/LED,kscan_en,to OE3 of 74hct354,,,,16,Vcc,5v,
+,17,3v3,,,,,,,,,,,
+,18,Aref,,,,,,,,,,,
+,19,PC0,D14/A0,PC0/ADC0,data_out_0,to A0 of 74hct138,,,,,74HCT354,,
+,20,PC1,D15/A1,PC1/ADC1,data_out_1,to A1 of 74hct138,,,,1,D7,kbd return,Pull-up
+,21,PC2,D16/A2,PC2/ADC2,data_out_2,to A2 of 74hct138,,,,2,D6,kbd return,Pull-up
+,22,PC3,D17/A3,PD3/ADC3,data_out_3,to S0 of 74hct354,,,,3,D5,kbd return,Pull-up
+,23,PC4,D18/A4,PC4/ADC4/SDA,data_out_4,to S1 of 74hct354,,,,4,D4,kbd return,Pull-up
+,24,PC5,D19/A5,PC5/ADC5/SCL,data_out_5,to S2 of 74hct354,,,,5,D3,kbd return,Pull-up
+,25,ADC6,A6,ADC6,,,,,,6,D2,kbd return,Pull-up
+,26,ADC7,A7,ADC7,,,,,,7,D1,kbd return,Pull-up
+,27,5v,,,,,,,,8,D0,kbd return,Pull-up
+,28,PC6,,PC6/Reset,,,,,,9,E\,gnd,
+,29,GND,,,,,,,,10,Gnd,Gnd,
+,30,Vin,,,,,,,,11,LE\,gnd,
+,,,,,,,,,,12,S2,data_out_5,from arduino
+,,,,,,,,,,13,S1,data_out_4,from arduino
+,,,,,,,,,,14,S0,data_out_3,from arduino
+,Physical layout,,,,,,,,,15,OE1\,gnd,
+,Port no.,Name,Pin no.,Arduino Board,Pin no.,Name,Port no.,,,16,OE2\,gnd,
+,,,,layout,,,,,,17,OE3,kscan_en,to arduino
+,,,,SPI connector,,,,,,18,Y\,o/c,
+,D1,TX1,1,,30,Vin,,,,19,Y,data_in,to arduino
+,D0,RX0,2,,29,GND,,,,20,Vcc,5v,
+,,RESET,3,,28,RESET,,,,,,,
+,,GND,4,,27,5v,,,,,,,
+,D2,PD2,5,,26,ADC7,A7,,,,,,
+,D3,PD3,6,,25,ADC6,A6,,,,,,
+,D4,PD4,7,,24,PC5,D19/A5,,,,,,
+,D5,PD5,8,,23,PC4,D18/A4,,,,,,
+,D6,PD6,9,,22,PC3,D17/A3,,,,,,
+,D7,PD7,10,,21,PC2,D16/A2,,,,,,
+,D8,PB0,11,,20,PC1,D15/A1,,,,,,
+,D9,PB1,12,,19,PC0,D14/A0,,,,,,
+,D10,PB2,13,,18,Aref,,,,,,,
+,D11,PB3,14,,17,3v3,,,,,,,
+,D12,PB4,15,,16,PB5,D13,,,,,,
+,,,,USB connector,,,,,,,,,
