@@ -1,0 +1,29 @@
+MIDI protocol
+
+* Up to 3 bytes per message
+* 1st byte always has MSbit=1  --- Command
+* 2nd,3rd bytes have MSbit=0   --- Parameters
+
+Command  P1  P2			Meaning
+0x8x     k   v			Note off, channel x, key k, velocity v
+0x9x     k   v			Note on, channel x, key k, velocity v
+0xAx     k   t			Aftertouch, channel x, key k, touch t
+0xBx     n   v          Continuous controller n, channel x, value v
+0xCx     n   ?          Patch change, channel x, instrument n (3rd param???)
+0xDx     p              Channel pressure channel x, pressure p
+0xEx     l   m          Pitch bend, channel x, 14 bits: m<<14+l
+0xF0                    Start of system exclusive message: n bytes until 0xF7
+0xF1                    MIDI Time Code Quarter Frame (Sys Common)	
+0xF2                    Song Position Pointer (Sys Common)	
+0xF3                    Song Select (Sys Common) 	
+0xF4                    ??? 	
+0xF5                    ??? 	
+0xF6                    Tune Request (Sys Common) 	
+0xF7                    End of system exclusive message (see 0xF0)
+0xF8                    Timing Clock (Sys Realtime) 	
+0xFA                    Start (Sys Realtime) 	
+0xFB                    Continue (Sys Realtime) 	
+0xFC                    Stop (Sys Realtime) 	
+0xFD                    ??? 	
+0xFE                    Active Sensing (Sys Realtime) 	
+0xFF                    System Reset (Sys Realtime) 
