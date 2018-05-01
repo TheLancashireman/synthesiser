@@ -26,6 +26,30 @@ const double sample_freq = 48000.0;		/* 48 kHz */
 const double scale = 8388608.0;			/* 24 bits */
 const double pi = 3.14159265;
 
+/* Frequencies of the octave starting at C8. Source: http://pages.mtu.edu/~suits/notefreqs.html
+*/
+const double freq8[12] =
+{
+	4186.01,
+	4434.92,
+	4698.63,
+	4978.03,
+	5274.04,
+	5587.65,
+	5919.91,
+	6271.93,
+	6644.88,
+	7040.00,
+	7458.62,
+	7902.13
+};
+
+const double c8_to_cx = 512.0;
+
+#define BUFLEN	52310					/* Determined by running the program with a much larger buffer */
+tg_wave_t sine[12];						/* The sine waves */
+tg_amplitude_t sine_buffer[BUFLEN];		/* Sample values for the sine waves. */
+
 /* Calculate the number of samples in a single cycle of a given frequency.
 */
 int wavelen(double sine_freq)
@@ -35,7 +59,7 @@ int wavelen(double sine_freq)
 
 /* Calculate a sine wave of the given frequency
 */
-int waveform(tg_sinewave_t *wave, double sine_freq)
+int waveform(tg_wave_t *wave, double sine_freq)
 {
 	double angle, amplitude;
 	int nsamples = wavelen(sine_freq);
@@ -59,10 +83,43 @@ int waveform(tg_sinewave_t *wave, double sine_freq)
 #if HOST_TEST
 		fprintf(stderr, "wave->length is incorrect: %d\n", wave->length);
 #endif
-		return -1;
+		return 1;
 	}
 	return 0;
 }
+
+int gen_sine(void)
+{
+	int i;
+	int next = 0;
+	int nerr = 0;
+	double freq;
+
+	for ( i = 0; i < 12; i++ )
+	{
+		if ( next >= BUFLEN )
+		{
+#if HOST_TEST
+        	fprintf(stderr, "Sine wave buffer is too small. Have %d, need at least %d\n", BUFLEN, next);
+#endif
+			return -1;
+		}
+		freq = freq8[i] / c8_to_cx;			/* The lowest frequency is the 16' subharmonic of c0 */
+		sine[i].wave = &sine_buffer[next];
+		sine[i].length = wavelen(freq);
+		next += sine[i].length;
+		nerr += waveform(&sine[i], freq);
+	}
+#if HOST_TEST
+		fprintf(stderr, "Octave generated: %d errors, %d samples\n", nerr, next);
+#endif
+	return nerr;
+}
+
+/* =================================
+ * Below here is all HOST_TEST stuff
+ * =================================
+*/
 
 #if HOST_TEST
 
@@ -78,7 +135,7 @@ tg_amplitude_t buffer[6000];
 
 int main(int argc, char **argv)
 {
-	tg_sinewave_t wave;
+	tg_wave_t wave;
 	int t;
 	wave.wave = buffer;
 
@@ -95,6 +152,9 @@ int main(int argc, char **argv)
 			}
 		}
 	}
+
+	gen_sine();
+
 	return 0;
 }
 #endif

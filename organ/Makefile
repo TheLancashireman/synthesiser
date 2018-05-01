@@ -23,3 +23,7 @@ clean:
 
 %.dat:	organ
 	./organ > $@
+
+# Test targets to run on host
+waveform:	waveform.c
+	cc -I. -Wall -o waveform waveform.c -lm -DHOST_TEST=1
