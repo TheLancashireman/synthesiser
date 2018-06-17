@@ -11,7 +11,7 @@ Command  P1  P2			Meaning
 0xBx     n   v          Continuous controller n, channel x, value v
 0xCx     n   ?          Patch change, channel x, instrument n (3rd param???)
 0xDx     p              Channel pressure channel x, pressure p
-0xEx     l   m          Pitch bend, channel x, 14 bits: m<<14+l
+0xEx     l   m          Pitch bend, channel x, 14 bits: m<<7+l
 0xF0                    Start of system exclusive message: n bytes until 0xF7
 0xF1                    MIDI Time Code Quarter Frame (Sys Common)	
 0xF2                    Song Position Pointer (Sys Common)	
