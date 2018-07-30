@@ -43,6 +43,8 @@ void prj_main(void)
 	 * GPIO19 Alt0 = PCM_FS
 	 * GPIO20 Alt0 = PCM_DIN
 	 * GPIO21 Alt0 = PCM_DOUT
+	 * If the I2S interface is in slave mode, maybe best to set the pin modes after
+	 * configuring the unit.
 	*/
 	dv_arm_bcm2835_gpio_pinconfig(18, DV_pinfunc_alt0, DV_pinpull_none);
 	dv_arm_bcm2835_gpio_pinconfig(19, DV_pinfunc_alt0, DV_pinpull_none);
@@ -69,9 +71,25 @@ void prj_main(void)
 
 	dv_bcm2835_pcm.pcm_mode &= ~DV_PCM_MODE_CLK_DIS;
 
+	int i = 0;
+	int j = 0;
+	int samples_per_dot = 88200;	/* CD sample rate * 2 */
 	for (;;)
 	{
 		dv_pcm_write(0);
+		i++;
+		if ( i >= samples_per_dot )
+		{
+			dv_consoledriver.putc('.');
+			i = 0;
+			j++;
+			if ( j >= 64 )
+			{
+				dv_consoledriver.putc('\r');
+				dv_consoledriver.putc('\n');
+				j = 0;
+			}
+		}
 	}
 }
 
