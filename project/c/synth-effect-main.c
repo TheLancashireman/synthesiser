@@ -30,36 +30,17 @@
 #include <devices/h/dv-arm-bcm2835-gpio.h>
 #include <devices/h/dv-arm-bcm2835-pcm.h>
 
-/* prj_main() - the function that runs at startup
- *
- * This function runs in a thread, so it really shouldn't call dv_kprintf()
-*/
-void prj_main(void)
+static void pcm_init(void)
 {
-	dv_kprintf("prj_main: started.\n");
-
-	/* 
-	 * GPIO18 Alt0 = PCM_CLK
-	 * GPIO19 Alt0 = PCM_FS
-	 * GPIO20 Alt0 = PCM_DIN
-	 * GPIO21 Alt0 = PCM_DOUT
-	 * If the I2S interface is in slave mode, maybe best to set the pin modes after
-	 * configuring the unit.
-	*/
-	dv_arm_bcm2835_gpio_pinconfig(18, DV_pinfunc_alt0, DV_pinpull_none);
-	dv_arm_bcm2835_gpio_pinconfig(19, DV_pinfunc_alt0, DV_pinpull_none);
-	dv_arm_bcm2835_gpio_pinconfig(20, DV_pinfunc_alt0, DV_pinpull_up);
-	dv_arm_bcm2835_gpio_pinconfig(21, DV_pinfunc_alt0, DV_pinpull_none);
-
 	/* Disable the clock
 	*/
-	dv_bcm2835_pcm.pcm_mode |= DV_PCM_MODE_CLK_DIS;		/* Disable the clock */
+	dv_bcm2835_pcm.pcm_mode = DV_PCM_MODE_CLK_DIS;		/* Disable the clock */
 
-	/* Set master mode for clk and fs. Not PDM, not packed, not inverted.
+	/* Set slave mode for clk and fs. Not PDM, not packed, not inverted.
 	 * FS len = 32 (bits 9..0)
 	 * Frame len = 64 (bits 19.10)
 	*/
-	dv_bcm2835_pcm.pcm_mode = DV_PCM_MODE_CLK_DIS | 32 | (64<<10);
+	dv_bcm2835_pcm.pcm_mode = DV_PCM_MODE_CLK_DIS | DV_PCM_MODE_CLKM | DV_PCM_MODE_FSM;
 
 	/* Set transmit config
 	 * 32 bits (CH1WEX = CH2WEX = 1, CH1WID = CH2WID = 8)
@@ -71,20 +52,72 @@ void prj_main(void)
 
 	dv_bcm2835_pcm.pcm_mode &= ~DV_PCM_MODE_CLK_DIS;
 
+	dv_bcm2835_pcm.pcm_cs |= DV_PCM_CS_EN | DV_PCM_CS_TXON | DV_PCM_CS_RXON;
+
+	/* Select the pins for I2S
+	 * GPIO18 Alt0 = PCM_CLK
+	 * GPIO19 Alt0 = PCM_FS
+	 * GPIO20 Alt0 = PCM_DIN
+	 * GPIO21 Alt0 = PCM_DOUT
+	 * If the I2S interface is in slave mode, it's best to set the pin modes after
+	 * configuring the unit.
+	*/
+	dv_arm_bcm2835_gpio_pinconfig(18, DV_pinfunc_alt0, DV_pinpull_up);
+	dv_arm_bcm2835_gpio_pinconfig(19, DV_pinfunc_alt0, DV_pinpull_up);
+	dv_arm_bcm2835_gpio_pinconfig(20, DV_pinfunc_alt0, DV_pinpull_up);
+	dv_arm_bcm2835_gpio_pinconfig(21, DV_pinfunc_alt0, DV_pinpull_up);
+}
+
+/* prj_main() - the function that runs at startup
+ *
+ * This function runs in a thread, so it really shouldn't call dv_kprintf()
+*/
+void prj_main(void)
+{
+	dv_kprintf("prj_main: started.\n");
+
+	/* Initialise the PCM hardware for I2S
+	*/
+	pcm_init();
+
+	/* Now some code that generates a signal for testing.
+	*/
 	int i = 0;
 	int j = 0;
-	int samples_per_dot = 88200;	/* CD sample rate * 2 */
+	const int samples_per_sec = 48000;
+	const int hz = 440;
+	const int gain = 65536*256;
+	int smax = (samples_per_sec/hz)/2;
+	int s = 0;
 	for (;;)
 	{
-		dv_pcm_write(0);
+		/* Write the sample to one channel, the inverse to the other
+		*/
+		dv_pcm_write(s*gain);
+		dv_pcm_write((-s)*gain);
+
+		s++;
+		if ( s > smax )
+		{
+			s = -smax;
+		}
+
 		i++;
-		if ( i >= samples_per_dot )
+#if 0
+		if ( i <= 8 )
+		{
+			dv_consoledriver.putc('*');
+			j++;
+		}
+#endif
+		if ( i >= samples_per_sec )
 		{
 			dv_consoledriver.putc('.');
 			i = 0;
 			j++;
-			if ( j >= 64 )
+			if ( j >= 60 )
 			{
+				/* One line of characters per minute */
 				dv_consoledriver.putc('\r');
 				dv_consoledriver.putc('\n');
 				j = 0;
