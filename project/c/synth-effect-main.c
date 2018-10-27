@@ -56,8 +56,8 @@ static void pcm_init(void)
 	 * CH1 & CH2 enabled
 	 * CH1 pos = 0, CH2 pos = 32
 	*/
-	dv_bcm2835_pcm.pcm_rxc = DV_PCM_xXC_CH1WEX | DV_PCM_xXC_CH1EN | (0<<20) | (8<<16) |
-							 DV_PCM_xXC_CH2WEX | DV_PCM_xXC_CH2EN | (32<<4) | (8<<0);
+	dv_bcm2835_pcm.pcm_rxc = DV_PCM_xXC_CH1WEX | DV_PCM_xXC_CH1EN | (1<<20) | (0<<16) |
+							 DV_PCM_xXC_CH2WEX | DV_PCM_xXC_CH2EN | (33<<4) | (0<<0);
 
 	dv_bcm2835_pcm.pcm_mode &= ~DV_PCM_MODE_CLK_DIS;
 
