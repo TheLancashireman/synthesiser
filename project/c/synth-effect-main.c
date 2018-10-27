@@ -50,6 +50,14 @@ static void pcm_init(void)
 	dv_bcm2835_pcm.pcm_txc = DV_PCM_xXC_CH1WEX | DV_PCM_xXC_CH1EN | (0<<20) | (8<<16) |
 							 DV_PCM_xXC_CH2WEX | DV_PCM_xXC_CH2EN | (32<<4) | (8<<0);
 
+	/* Set receive config
+	 * 32 bits (CH1WEX = CH2WEX = 1, CH1WID = CH2WID = 8)
+	 * CH1 & CH2 enabled
+	 * CH1 pos = 0, CH2 pos = 32
+	*/
+	dv_bcm2835_pcm.pcm_rxc = DV_PCM_xXC_CH1WEX | DV_PCM_xXC_CH1EN | (0<<20) | (8<<16) |
+							 DV_PCM_xXC_CH2WEX | DV_PCM_xXC_CH2EN | (32<<4) | (8<<0);
+
 	dv_bcm2835_pcm.pcm_mode &= ~DV_PCM_MODE_CLK_DIS;
 
 	dv_bcm2835_pcm.pcm_cs |= DV_PCM_CS_EN | DV_PCM_CS_TXON | DV_PCM_CS_RXON;
@@ -67,6 +75,9 @@ static void pcm_init(void)
 	dv_arm_bcm2835_gpio_pinconfig(20, DV_pinfunc_alt0, DV_pinpull_up);
 	dv_arm_bcm2835_gpio_pinconfig(21, DV_pinfunc_alt0, DV_pinpull_up);
 }
+
+static void read_adc(void);
+static void print_adc(void);
 
 /* prj_main() - the function that runs at startup
  *
@@ -96,6 +107,10 @@ void prj_main(void)
 		dv_pcm_write(s*gain);
 		dv_pcm_write((-s)*gain);
 
+#if 1
+		read_adc();
+#endif
+
 		s++;
 		if ( s > smax )
 		{
@@ -115,15 +130,47 @@ void prj_main(void)
 			dv_consoledriver.putc('.');
 			i = 0;
 			j++;
-			if ( j >= 60 )
+			if ( j >= 10 )
 			{
 				/* One line of characters per minute */
 				dv_consoledriver.putc('\r');
 				dv_consoledriver.putc('\n');
 				j = 0;
+#if 1
+				print_adc();			/* This will fsck up the timing bigly */
+#endif
 			}
 		}
 	}
+}
+
+dv_i32_t s1_min = 2147483647;
+dv_i32_t s1_max = -2147483648;
+dv_i32_t s2_min = 2147483647;
+dv_i32_t s2_max = -2147483648;
+
+static void read_adc(void)
+{
+	dv_i32_t s;
+
+	dv_pcm_read(&s);
+
+	if ( s > s1_max ) s1_max = s;
+	if ( s < s1_min ) s1_min = s;
+
+	dv_pcm_read(&s);
+
+	if ( s > s2_max ) s2_max = s;
+	if ( s < s2_min ) s2_min = s;
+}
+
+static void print_adc(void)
+{
+	dv_kprintf("max1, min1, max2, min2 = %d, %d, %d, %d\n", s1_max, s1_min, s2_max, s2_min);
+	s1_min = 2147483647;
+	s1_max = -2147483648;
+	s2_min = 2147483647;
+	s2_max = -2147483648;
 }
 
 /* Handlers for all unimplemented exceptions.
