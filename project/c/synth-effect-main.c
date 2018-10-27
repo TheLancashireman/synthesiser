@@ -155,11 +155,13 @@ static void read_adc(void)
 	dv_i32_t s;
 
 	dv_pcm_read(&s);
+	s = ((dv_i32_t)(((dv_u32_t)s)<<8))/256;		/* Sign-extend */
 
 	if ( s > s1_max ) s1_max = s;
 	if ( s < s1_min ) s1_min = s;
 
 	dv_pcm_read(&s);
+	s = ((dv_i32_t)(((dv_u32_t)s)<<8))/256;		/* Sign-extend */
 
 	if ( s > s2_max ) s2_max = s;
 	if ( s < s2_min ) s2_min = s;
