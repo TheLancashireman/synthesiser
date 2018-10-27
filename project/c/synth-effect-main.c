@@ -30,54 +30,6 @@
 #include <devices/h/dv-arm-bcm2835-gpio.h>
 #include <devices/h/dv-arm-bcm2835-pcm.h>
 
-static void pcm_init(void)
-{
-	/* Disable the clock
-	*/
-	dv_bcm2835_pcm.pcm_mode = DV_PCM_MODE_CLK_DIS;		/* Disable the clock */
-
-	/* Set slave mode for clk and fs. Not PDM, not packed, not inverted.
-	 * FS len = 32 (bits 9..0)
-	 * Frame len = 64 (bits 19.10)
-	*/
-	dv_bcm2835_pcm.pcm_mode = DV_PCM_MODE_CLK_DIS | DV_PCM_MODE_CLKM | DV_PCM_MODE_FSM |
-								DV_PCM_MODE_FSI | DV_PCM_MODE_CLKI;
-
-	/* Set transmit config
-	 * 32 bits (CH1WEX = CH2WEX = 1, CH1WID = CH2WID = 8)
-	 * CH1 & CH2 enabled
-	 * CH1 pos = 0, CH2 pos = 32
-	*/
-	dv_bcm2835_pcm.pcm_txc = DV_PCM_xXC_CH1WEX | DV_PCM_xXC_CH1EN | (0<<20) | (8<<16) |
-							 DV_PCM_xXC_CH2WEX | DV_PCM_xXC_CH2EN | (32<<4) | (8<<0);
-
-	/* Set receive config
-	 * 32 bits (CH1WEX = CH2WEX = 1, CH1WID = CH2WID = 8)
-	 * CH1 & CH2 enabled
-	 * CH1 pos = 0, CH2 pos = 32
-	*/
-	dv_bcm2835_pcm.pcm_rxc = DV_PCM_xXC_CH1WEX | DV_PCM_xXC_CH1EN | (1<<20) | (0<<16) |
-							 DV_PCM_xXC_CH2WEX | DV_PCM_xXC_CH2EN | (33<<4) | (0<<0);
-
-	dv_bcm2835_pcm.pcm_mode &= ~DV_PCM_MODE_CLK_DIS;
-
-	/* Enable device, Tx and Rx on, sign-extend RX
-	*/
-	dv_bcm2835_pcm.pcm_cs |= DV_PCM_CS_EN | DV_PCM_CS_TXON | DV_PCM_CS_RXON | DV_PCM_CS_RXSEX;
-
-	/* Select the pins for I2S
-	 * GPIO18 Alt0 = PCM_CLK
-	 * GPIO19 Alt0 = PCM_FS
-	 * GPIO20 Alt0 = PCM_DIN
-	 * GPIO21 Alt0 = PCM_DOUT
-	 * If the I2S interface is in slave mode, it's best to set the pin modes after
-	 * configuring the unit.
-	*/
-	dv_arm_bcm2835_gpio_pinconfig(18, DV_pinfunc_alt0, DV_pinpull_up);
-	dv_arm_bcm2835_gpio_pinconfig(19, DV_pinfunc_alt0, DV_pinpull_up);
-	dv_arm_bcm2835_gpio_pinconfig(20, DV_pinfunc_alt0, DV_pinpull_up);
-	dv_arm_bcm2835_gpio_pinconfig(21, DV_pinfunc_alt0, DV_pinpull_up);
-}
 
 static void read_adc(void);
 static void print_adc(void);
@@ -92,7 +44,7 @@ void prj_main(void)
 
 	/* Initialise the PCM hardware for I2S
 	*/
-	pcm_init();
+	dv_pcm_init_i2s();
 
 	/* Now some code that generates a signal for testing.
 	*/
