@@ -61,7 +61,9 @@ static void pcm_init(void)
 
 	dv_bcm2835_pcm.pcm_mode &= ~DV_PCM_MODE_CLK_DIS;
 
-	dv_bcm2835_pcm.pcm_cs |= DV_PCM_CS_EN | DV_PCM_CS_TXON | DV_PCM_CS_RXON;
+	/* Enable device, Tx and Rx on, sign-extend RX
+	*/
+	dv_bcm2835_pcm.pcm_cs |= DV_PCM_CS_EN | DV_PCM_CS_TXON | DV_PCM_CS_RXON | DV_PCM_CS_RXSEX;
 
 	/* Select the pins for I2S
 	 * GPIO18 Alt0 = PCM_CLK
@@ -155,13 +157,11 @@ static void read_adc(void)
 	dv_i32_t s;
 
 	dv_pcm_read(&s);
-	s = ((dv_i32_t)(((dv_u32_t)s)<<8))/256;		/* Sign-extend */
 
 	if ( s > s1_max ) s1_max = s;
 	if ( s < s1_min ) s1_min = s;
 
 	dv_pcm_read(&s);
-	s = ((dv_i32_t)(((dv_u32_t)s)<<8))/256;		/* Sign-extend */
 
 	if ( s > s2_max ) s2_max = s;
 	if ( s < s2_min ) s2_min = s;
