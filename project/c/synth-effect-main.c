@@ -40,7 +40,8 @@ static void pcm_init(void)
 	 * FS len = 32 (bits 9..0)
 	 * Frame len = 64 (bits 19.10)
 	*/
-	dv_bcm2835_pcm.pcm_mode = DV_PCM_MODE_CLK_DIS | DV_PCM_MODE_CLKM | DV_PCM_MODE_FSM;
+	dv_bcm2835_pcm.pcm_mode = DV_PCM_MODE_CLK_DIS | DV_PCM_MODE_CLKM | DV_PCM_MODE_FSM |
+								DV_PCM_MODE_FSI | DV_PCM_MODE_CLKI;
 
 	/* Set transmit config
 	 * 32 bits (CH1WEX = CH2WEX = 1, CH1WID = CH2WID = 8)
