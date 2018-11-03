@@ -30,9 +30,8 @@
 #include <devices/h/dv-arm-bcm2835-gpio.h>
 #include <devices/h/dv-arm-bcm2835-pcm.h>
 
-
-static void read_adc(void);
-static void print_adc(void);
+static void calc_min_max(dv_i32_t sL, dv_i32_t sR);
+static void print_min_max(void);
 
 /* prj_main() - the function that runs at startup
  *
@@ -46,86 +45,85 @@ void prj_main(void)
 	*/
 	dv_pcm_init_i2s();
 
-	/* Now some code that generates a signal for testing.
+	/* Timing for the dots
 	*/
 	int i = 0;
 	int j = 0;
-	const int samples_per_sec = 48000;
-	const int hz = 440;
-	const int gain = 65536*256;
-	int smax = (samples_per_sec/hz)/2;
-	int s = 0;
+
+	/* Extremely crude signal generator.
+	 * This signal is fed back to the ADC.
+	*/
+	const dv_i32_t samples_per_sec = 48000;
+	const dv_i32_t hz = 440;
+	const dv_i32_t gainGen = 65536*256;
+	dv_i32_t smax = (samples_per_sec/hz)/2;
+	dv_i32_t sGen = 0;
+
+	/* Passthrough ADC-DAC
+	*/
+	dv_i32_t sLeft = 0;
+	dv_i32_t sRight = 0;
+	const dv_i32_t gainSig = 128;
+
 	for (;;)
 	{
 		/* Write the sample to one channel, the inverse to the other
 		*/
-		dv_pcm_write(s*gain);
-		dv_pcm_write((-s)*gain);
+		dv_pcm_write(sGen*gainGen);
+		dv_pcm_write(sLeft*gainSig);
 
-#if 1
-		read_adc();
-#endif
-
-		s++;
-		if ( s > smax )
+		sGen++;
+		if ( sGen > smax )
 		{
-			s = -smax;
+			sGen = -smax;
 		}
 
 		i++;
-#if 0
-		if ( i <= 8 )
-		{
-			dv_consoledriver.putc('*');
-			j++;
-		}
-#endif
 		if ( i >= samples_per_sec )
 		{
 			dv_consoledriver.putc('.');
 			i = 0;
 			j++;
-			if ( j >= 10 )
+			if ( j >= 60 )
 			{
 				/* One line of characters per minute */
 				dv_consoledriver.putc('\r');
 				dv_consoledriver.putc('\n');
 				j = 0;
-#if 1
-				print_adc();			/* This will fsck up the timing bigly */
+#if 0
+				print_min_max();			/* This will fsck up the timing bigly */
 #endif
 			}
 		}
+
+		dv_pcm_read(&sLeft);
+		dv_pcm_read(&sRight);
+
+		calc_min_max(sLeft, sRight);
 	}
 }
 
-dv_i32_t s1_min = 2147483647;
-dv_i32_t s1_max = -2147483648;
-dv_i32_t s2_min = 2147483647;
-dv_i32_t s2_max = -2147483648;
+dv_i32_t sL_min = 2147483647;
+dv_i32_t sL_max = -2147483648;
+dv_i32_t sR_min = 2147483647;
+dv_i32_t sR_max = -2147483648;
 
-static void read_adc(void)
+static void calc_min_max(dv_i32_t sL, dv_i32_t sR)
 {
-	dv_i32_t s;
+	if ( sL > sL_max ) sL_max = sL;
+	if ( sL < sL_min ) sL_min = sL;
 
-	dv_pcm_read(&s);
-
-	if ( s > s1_max ) s1_max = s;
-	if ( s < s1_min ) s1_min = s;
-
-	dv_pcm_read(&s);
-
-	if ( s > s2_max ) s2_max = s;
-	if ( s < s2_min ) s2_min = s;
+	if ( sR > sR_max ) sR_max = sR;
+	if ( sR < sR_min ) sR_min = sR;
 }
 
-static void print_adc(void)
+static void print_min_max(void)
 {
-	dv_kprintf("max1, min1, max2, min2 = %d, %d, %d, %d\n", s1_max, s1_min, s2_max, s2_min);
-	s1_min = 2147483647;
-	s1_max = -2147483648;
-	s2_min = 2147483647;
-	s2_max = -2147483648;
+	dv_kprintf("max1, min1, max2, min2 = %d, %d, %d, %d\n", sL_max, sL_min, sR_max, sR_min);
+	sL_min = 2147483647;
+	sL_max = -2147483648;
+	sR_min = 2147483647;
+	sR_max = -2147483648;
 }
 
 /* Handlers for all unimplemented exceptions.
