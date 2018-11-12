@@ -31,28 +31,27 @@
  * 
 */
 
-#define led1		13		// On-board LED connected to digital pin 13
-
 // Pins for data lines
-#define data_out_0	2		// PD2		}
-#define data_out_1	3		// PD3		} Column selectors for scan --> A0..A2 of 74HCT138
-#define data_out_2	4		// PD4		}
+#define data_out_0	14		// PC0		}
+#define data_out_1	15		// PC1		} Column selectors for scan --> A0..A2 of 74HCT138
+#define data_out_2	16		// PC2		}
 
-#define data_out_3	5		// PD5		}
-#define data_out_4	6		// PD6		} Row selectors for scan --> S0..S2 of 74HCT354
-#define data_out_5	7		// PD7		}
+#define data_out_3	17		// PC3		}
+#define data_out_4	18		// PC4		} Row selectors for scan --> S0..S2 of 74HCT354
+#define data_out_5	19		// PC5		}
 
-#define data_out_6	8		// PD7
-#define data_out_7	9		// PD7
+#define kscan_en	13		// PB5 - enables the Y output of the '354  (OE3)
+#define data_in		12		// PB4 - data in (from Y output of the '354)
 
-#define kscan_en	11		// PB3 - enables the Y output of the '354  (OE3)
-#define data_in		12		// PB4 - 
-
-#define kbd_nscan	6		/* No. of scan lines */
+#define kbd_nscan	8		/* No. of scan lines */
 #define kbd_nrtn	8		/* No. of return lines */
+#define kbd_ctrl	7		/* No. of control lines */
+#define kbd_nkeys	(kbd_nscan*kbd_nrtn)	/* Total number of keys */
 
-const unsigned char dataline[8] =
-{	data_out_0, data_out_1, data_out_2, data_out_3, data_out_4, data_out_5, data_out_6, data_out_7 };
+#define midi		0		/* Set to 1 for midi, 0 for finding mapping */
+
+const unsigned char dataline[kbd_ctrl] =
+{	data_out_0, data_out_1, data_out_2, data_out_3, data_out_4, data_out_5, kscan_en };
 
 const unsigned char scanline[3] =
 {	data_out_0, data_out_1, data_out_2	};
@@ -66,7 +65,7 @@ struct keystate_s
 	unsigned char count;
 };
 
-keystate_s keystate[64];
+keystate_s keystate[kbd_nkeys];
 
 /* Keymap.
  * Numbers in the range 0..127 are midi notes.
@@ -74,7 +73,7 @@ keystate_s keystate[64];
  * 0xff means do nothing.
  * The columns (x0..x7) and rows (Ax..Hx) of this table are the raw alphanumeric scan codes in the test version.
 */
-const unsigned char keymap[64] =
+const unsigned char keymap[kbd_nkeys] =
 {//	x0		x1		x2		x3		x4		x5		x6		x7
 	45,		46,		47,		48,		41,		42,		43,		44,		// Ax
 	37,		38,		39,		40,		33,		34,		35,		36,		// Bx
@@ -102,18 +101,12 @@ void setup(void)
 {
 	int i;
 
-	pinMode(led1, OUTPUT);				// Sets the digital pin as output
-	digitalWrite(led1, LOW);			// Drive the pin low (LED off)
-
-	pinMode(kscan_en, OUTPUT);			// Switch data from keyscan onto input pin.
-	digitalWrite(kscan_en, LOW);		//  -- disable.
-
 	pinMode(data_in, INPUT_PULLUP);		// Data input pin
 
-	for ( i = 0; i < 8; i++ )			// 8 data outputs
+	for ( i = 0; i < kbd_ctrl; i++ )	// All output pins
 	{
 		pinMode(dataline[i], OUTPUT);
-		digitalWrite(scanline[i], HIGH);
+		digitalWrite(dataline[i], LOW);
 	}
 
 	for ( i = 0; i < 64; i++ )
@@ -123,7 +116,7 @@ void setup(void)
 	}
 
 	Serial.begin(115200);					// Start the serial port.
-#if 0
+#if !midi
 	Serial.println("Hello world");
 #endif
 }
@@ -132,8 +125,6 @@ void setup(void)
 */
 void loop(void)
 {
-	int ledCount = 100;
-	int ledState = 0;
 	unsigned long then;
 
 	then = millis();
@@ -144,39 +135,6 @@ void loop(void)
 		} while ( (millis() - then) < 10 );
 
 		then += 10;
-
-		ledCount--;
-		if ( ledCount <= 0 )
-		{
-			if ( ledState )
-			{
-				digitalWrite(led1, LOW);
-				ledState = 0;
-				ledCount = 98;
-			}
-			else
-			{
-				digitalWrite(led1, HIGH);
-				ledState = 1;
-				ledCount = 2;
-			}
-		}
-
-#if 0
-		if ( Serial.read() >= 0 )
-		{
-			scan++;
-			if ( scan > 7 )
-				scan = 0;
-			digitalWrite(scanline[0], (scan & 0x01) == 0 ? LOW : HIGH);
-			digitalWrite(scanline[1], (scan & 0x02) == 0 ? LOW : HIGH);
-			digitalWrite(scanline[2], (scan & 0x04) == 0 ? LOW : HIGH);
-			Serial.print("Scan ");
-			char c = '0'+scan;
-			Serial.print(c);
-			Serial.println("");
-		}
-#endif
 
 #if 1
 		{
@@ -211,7 +169,7 @@ void loop(void)
 							keystate[idx].state = 1;
 							keystate[idx].count = 2;		// 20 ms
 
-#if 1
+#if midi
 							if ( (k = keymap[idx]) <= 127 )
 							{
 								k += midi_offset;
@@ -238,7 +196,7 @@ void loop(void)
 							// Released
 							keystate[idx].state = 0;
 							keystate[idx].count = 2;		// 20 ms
-#if 1
+#if midi
 							if ( (k = keymap[idx]) <= 127 )
 							{
 								k += midi_offset;
