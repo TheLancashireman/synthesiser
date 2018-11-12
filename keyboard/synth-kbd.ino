@@ -48,7 +48,7 @@
 #define kbd_ctrl	7		/* No. of control lines */
 #define kbd_nkeys	(kbd_nscan*kbd_nrtn)	/* Total number of keys */
 
-#define midi		0		/* Set to 1 for midi, 0 for finding mapping */
+#define midi		1		/* Set to 1 for midi, 0 for finding mapping */
 
 const unsigned char dataline[kbd_ctrl] =
 {	data_out_0, data_out_1, data_out_2, data_out_3, data_out_4, data_out_5, kscan_en };
@@ -75,12 +75,12 @@ keystate_s keystate[kbd_nkeys];
 */
 const unsigned char keymap[kbd_nkeys] =
 {//	x0		x1		x2		x3		x4		x5		x6		x7
-	45,		46,		47,		48,		41,		42,		43,		44,		// Ax
-	37,		38,		39,		40,		33,		34,		35,		36,		// Bx
-	29,		30,		31,		32,		25,		26,		27,		28,		// Cx
-	5,		6,		7,		8,		0xff,	0xff,	0xff,	0xff,	// Dx
-	13,		14,		15,		16,		9,		10,		11,		12,		// Ex
-	21,		22,		23,		24,		17,		18,		19,		20,		// Fx
+	21,		22,		23,		24,		17,		18,		19,		20,		// Ax
+	13,		14,		15,		16,		9,		10,		11,		12,		// Bx
+	5,		6,		7,		8,		0xff,	0xff,	0xff,	0xff,	// Cx
+	29,		30,		31,		32,		25,		26,		27,		28,		// Dx
+	37,		38,		39,		40,		33,		34,		35,		36,		// Ex
+	45,		46,		47,		48,		41,		42,		43,		44,		// Fx
 	0xff,	0xff,	0xff,	0xff,	0xff,	0xff,	0xff,	0xff,	// Gx
 	0xff,	0xff,	0xff,	0xff,	0xff,	0xff,	0xff,	0xff,	// Hx
 };
