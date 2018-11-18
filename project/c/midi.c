@@ -20,23 +20,27 @@
 #include <kernel/h/dv-kconfig.h>
 #include <kernel/h/dv-stdio.h>
 
+#include <project/h/midi.h>
+
 static unsigned midi_command[3];		/* Buffer for receiving MIDI commands */
 static int midi_idx = 0;
 
+/* midi_scan() - watch for midi commands in console input stream
+*/
 unsigned *midi_scan(void)
 {
 	if ( dv_consoledriver.isrx() )
 	{
-		int c = dv_consoledriver.getc();
+		unsigned c = (unsigned)dv_consoledriver.getc();
 
-		if ( (((unsigned)c) & 0x80) != 0 )
+		if ( (c & 0x80) != 0 )
 		{
-			midi_command[0] = (unsigned)c;
+			midi_command[0] = c;
 			midi_idx = 1;
 		}
 		else if ( midi_idx > 0 )
 		{
-			midi_command[midi_idx++] = (unsigned)c;
+			midi_command[midi_idx++] = c;
 			if ( midi_idx >= 3 )
 			{
 				midi_idx = 0;

@@ -50,13 +50,14 @@ DV_LD_OBJS	+= $(DV_OBJ_D)/dv-vectors.$(DV_O)
 DV_LD_OBJS	+= $(DV_OBJ_D)/dv-c0.$(DV_O)
 DV_LD_OBJS	+= $(DV_OBJ_D)/prj-vectors.$(DV_O)
 DV_LD_OBJS	+= $(DV_OBJ_D)/synth-effect-main.$(DV_O)
+DV_LD_OBJS	+= $(DV_OBJ_D)/midi.$(DV_O)
+DV_LD_OBJS	+= $(DV_OBJ_D)/wave.$(DV_O)
 
 # Include the board's file lists
 include $(DV_BOARD_D)/make/dv-board-list.make
 
 #CC_OPT		+= -O2
 
-VPATH 		+= effect
 VPATH       += project/c
 VPATH       += project/s
 VPATH       += $(DV_BOARD_D)/c

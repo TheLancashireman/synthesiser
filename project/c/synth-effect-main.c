@@ -30,7 +30,7 @@
 #include <devices/h/dv-arm-bcm2835-gpio.h>
 #include <devices/h/dv-arm-bcm2835-pcm.h>
 
-#include <midi/midi.h>
+#include <project/h/midi.h>
 
 static void calc_min_max(dv_i32_t sL, dv_i32_t sR);
 static void print_min_max(void);
