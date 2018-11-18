@@ -31,6 +31,12 @@ const double sample_freq = 48000.0;
 const long maxi = 0x7fffffffL;
 const long maxu = 0xffffffffL;
 
+/* Note frequencies of the root wavetables.
+ * These are sub-bass frequencies starting with the A that's two octaves below A0 (27.5 Hz).
+ * I guess you'd call it A-2.
+ *
+ * Choosing frequencies this low might be a bit excessive.
+*/
 const double root_freq[] =
 {
 	6.875,
@@ -84,6 +90,20 @@ int main(int argc, char** argv)
 		}
 	}
 
+	/* Wavetable generation. First of all we need to know how many samples for each of the root frequencies.
+	 *
+	 * Work out the number of samples as a real number.
+	 * Round to the nearest integer.
+	 * To keep errors even smaller: if the fractional part is between 0.25 and 0.75, generate
+	 * two cycles of the waveform. There's one frequency that has a fraction part of 0.26 but I hope
+	 * the error won't result in any noticable off-key notes.
+	 *
+	 * The basic idea of tone generation is to play a harmonic x of the root note by sending every xth
+	 * sample to the DAC. The trick being that when the output sample required is higher than the number
+	 * of samples in the generated waveform, the generation subtracts the number of samples rather than
+	 * starting again from zero. This means that the output samples reflect fairly accurately the
+	 * true waveform and don't get quantized.
+	*/
 	for ( i=0; i<12; i++ )
 	{
 		f = sample_freq/root_freq[i];
@@ -115,6 +135,7 @@ int main(int argc, char** argv)
 		wavetable[i].wave = calloc(nsamp, sizeof(int));
 
 	}
+
 	if ( wav == 0 )
 		printf("Total: %d\n", total);
 	else
@@ -125,14 +146,20 @@ int main(int argc, char** argv)
 			{
 				if ( wav == SAW )
 				{
-					long amplitude = (maxu * j) / wavetable[i].nsamp;
+					/* Sawtooth wave: generate a monotonically-increasing amplitude
+					 * and use it (modulo full-scale)
+					*/
+					long amplitude = (maxu * j * wavetable[i].ncyc) / wavetable[i].nsamp;
 					if ( amplitude > maxu )
 						amplitude -= maxu;
 					wavetable[i].wave[j] = amplitude - maxi;
 				}
-				else if ( wav == TRI )
+				else if ( wav == TRI || wav == SQU )
 				{
-					long amplitude = (maxu * 2 * j) / wavetable[i].nsamp;
+					/* Triangle wave: generate a monotonically-increasing amplitude
+					 * and fold it every time it exceeds the range.
+					*/
+					long amplitude = (maxu * 2 * j * wavetable[i].ncyc) / wavetable[i].nsamp;
 					int folded;
 					do {
 						folded = 0;
@@ -147,10 +174,15 @@ int main(int argc, char** argv)
 							folded = 1;
 						}
 					} while (folded);
+
 					wavetable[i].wave[j] = amplitude - maxi;
-				}
-				else if ( wav == SQU )
-				{
+
+					/* Square wave is simply the sign of a triangle wave
+					*/
+					if ( wav == SQU )
+					{
+						wavetable[i].wave[j] = (wavetable[i].wave[j] < 0) ? -maxi : maxi;
+					}
 				}
 				else if ( wav == SIN )
 				{
