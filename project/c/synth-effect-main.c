@@ -30,9 +30,10 @@
 #include <devices/h/dv-arm-bcm2835-gpio.h>
 #include <devices/h/dv-arm-bcm2835-pcm.h>
 
+#include <midi/midi.h>
+
 static void calc_min_max(dv_i32_t sL, dv_i32_t sR);
 static void print_min_max(void);
-static void midi_scan(void);
 
 /* prj_main() - the function that runs at startup
  *
@@ -127,31 +128,6 @@ static void print_min_max(void)
 	sL_max = -2147483648;
 	sR_min = 2147483647;
 	sR_max = -2147483648;
-}
-
-unsigned midi_command[3];
-int midi_idx = 0;
-static void midi_scan(void)
-{
-	if ( dv_consoledriver.isrx() )
-	{
-		int c = dv_consoledriver.getc();
-
-		if ( (((unsigned)c) & 0x80) != 0 )
-		{
-			midi_command[0] = (unsigned)c;
-			midi_idx = 1;
-		}
-		else if ( midi_idx > 0 )
-		{
-			midi_command[midi_idx++] = (unsigned)c;
-			if ( midi_idx >= 3 )
-			{
-				dv_kprintf("Rx: %02x %03d %03d\n", (unsigned)midi_command[0], midi_command[1], midi_command[2]);
-				midi_idx = 0;
-			}
-		}
-	}
 }
 
 /* Handlers for all unimplemented exceptions.
