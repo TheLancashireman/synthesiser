@@ -31,9 +31,7 @@
 #include <devices/h/dv-arm-bcm2835-pcm.h>
 
 #include <project/h/midi.h>
-
-static void calc_min_max(dv_i32_t sL, dv_i32_t sR);
-static void print_min_max(void);
+#include <project/h/wave.h>
 
 /* prj_main() - the function that runs at startup
  *
@@ -41,45 +39,50 @@ static void print_min_max(void);
 */
 void prj_main(void)
 {
+	const dv_i32_t samples_per_sec = 48000;
+	unsigned current_note = 256;
 	dv_kprintf("prj_main: started.\n");
 
 	/* Initialise the PCM hardware for I2S
 	*/
 	dv_pcm_init_i2s();
 
+	/* Initialise the waveform tables
+	*/
+	dv_kprintf("prj_main: calling wave_init().\n");
+	if ( wave_init() != 0 )
+	{
+		dv_panic(dv_panic_unimplemented, "wave_init", "Oops! wave buffer too small");
+	}
+
+	/* Start off with sawtooth
+	*/
+	dv_kprintf("prj_main: calling wave_generate(SAW).\n");
+	wave_generate(TRI);
+
 	/* Timing for the dots
 	*/
 	int i = 0;
 	int j = 0;
 
-	/* Extremely crude signal generator.
-	 * This signal is fed back to the ADC.
-	*/
-	const dv_i32_t samples_per_sec = 48000;
-	const dv_i32_t hz = 440;
-	const dv_i32_t gainGen = 65536*256;
-	dv_i32_t smax = (samples_per_sec/hz)/2;
-	dv_i32_t sGen = 0;
-
-	/* Passthrough ADC-DAC
-	*/
-	dv_i32_t sLeft = 0;
-	dv_i32_t sRight = 0;
-	const dv_i32_t gainSig = 128;
-
 	for (;;)
 	{
-		/* Write the sample to one channel, the inverse to the other
+		dv_i32_t sLeft, sRight;
+		dv_i32_t sGen;
+
+		/* Read (and discard) analogue inputs.
 		*/
-		dv_pcm_write(sGen*gainGen);
-		dv_pcm_write(sLeft*gainSig);
+		dv_pcm_read(&sLeft);
+		dv_pcm_read(&sRight);
 
-		sGen++;
-		if ( sGen > smax )
-		{
-			sGen = -smax;
-		}
+		/* Play the note on the left channel. Right channel fixed at 0
+		*/
+		sGen = wave_play_mono(0);
+		dv_pcm_write(sGen);
+		dv_pcm_write(0);
 
+		/* Print the "alive indication" dots
+		*/
 		i++;
 		if ( i >= samples_per_sec )
 		{
@@ -92,43 +95,46 @@ void prj_main(void)
 				dv_consoledriver.putc('\r');
 				dv_consoledriver.putc('\n');
 				j = 0;
-#if 0
-				print_min_max();			/* This will fsck up the timing bigly */
-#endif
 			}
 		}
 
-		midi_scan();
-
-		dv_pcm_read(&sLeft);
-		dv_pcm_read(&sRight);
-
-		calc_min_max(sLeft, sRight);
+		/* Monitor the midi input. Control the tome generator.
+		*/
+		unsigned *cmd = midi_scan();
+		if ( cmd != DV_NULL )
+		{
+			/* Quick hack of a monophonic synthesiser. Each new note replaces the old one.
+			 * Note off only recognised if it's the current note.
+			*/
+			/* Updating the generator data like this only works if generation is running in the
+			 * same thread as the midi detection.
+			 * If not, we need some synchronisation.
+			*/
+			if ( cmd[0] == 0x90 )	/* Note on */
+			{
+				if ( current_note < 128 )
+				{
+					wave_stop_mono(0);
+					dv_kprintf("stop(0)\n");
+				}
+				current_note = cmd[1];
+				/* Midi note 0 is C 8.175 Hz (i.e. the C of our root table, index 3)
+				*/
+				int n = (current_note+3)%12;
+				int h = 1 << ((current_note+3)/12);
+				wave_start_mono(0, n, h);
+				dv_kprintf("start(0, %d, %d)\n", n, h);
+			}
+			else if ( cmd[0] == 0x80 && current_note == cmd[1] )	/* Note off, current note */
+			{
+				current_note = 256;
+				wave_stop_mono(0);
+				dv_kprintf("stop(0)\n");
+			}
+		}
 	}
 }
 
-dv_i32_t sL_min = 2147483647;
-dv_i32_t sL_max = -2147483648;
-dv_i32_t sR_min = 2147483647;
-dv_i32_t sR_max = -2147483648;
-
-static void calc_min_max(dv_i32_t sL, dv_i32_t sR)
-{
-	if ( sL > sL_max ) sL_max = sL;
-	if ( sL < sL_min ) sL_min = sL;
-
-	if ( sR > sR_max ) sR_max = sR;
-	if ( sR < sR_min ) sR_min = sR;
-}
-
-static void print_min_max(void)
-{
-	dv_kprintf("max1, min1, max2, min2 = %d, %d, %d, %d\n", sL_max, sL_min, sR_max, sR_min);
-	sL_min = 2147483647;
-	sL_max = -2147483648;
-	sR_min = 2147483647;
-	sR_max = -2147483648;
-}
 
 /* Handlers for all unimplemented exceptions.
  *

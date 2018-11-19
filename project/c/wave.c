@@ -23,8 +23,13 @@
 
 #define TOTAL_SAMPLES	89138
 
+#if 1
 const dv_i64_t maxi = 0x7fffffffL;
 const dv_i64_t maxu = 0xffffffffL;
+#else
+const dv_i64_t maxi = 2000000000L;
+const dv_i64_t maxu = 4000000000L;
+#endif
 
 struct wavetable_s
 {
@@ -100,17 +105,17 @@ void wave_generate(int wav)
 				/* Sawtooth wave: generate a monotonically-increasing amplitude
 				 * and use it (modulo full-scale)
 				*/
-				long amplitude = (maxu * j * wavetable[i].ncyc) / wavetable[i].nsamp;
+				dv_i64_t amplitude = (maxu * j * wavetable[i].ncyc + wavetable[i].nsamp - 1) / wavetable[i].nsamp;
 				while ( amplitude > maxu )
 					amplitude -= maxu;
-				wavetable[i].wave[j] = amplitude - maxi;
+				wavetable[i].wave[j] = (dv_i32_t)(amplitude - maxi);
 			}
 			else if ( wav == TRI || wav == SQU )
 			{
 				/* Triangle wave: generate a monotonically-increasing amplitude
 				 * and fold it every time it exceeds the range.
 				*/
-				long amplitude = (maxu * 2 * j * wavetable[i].ncyc) / wavetable[i].nsamp;
+				dv_i64_t amplitude = (maxu * 2 * j * wavetable[i].ncyc + wavetable[i].nsamp - 1) / wavetable[i].nsamp;
 				int folded;
 				do {
 					folded = 0;
@@ -126,7 +131,7 @@ void wave_generate(int wav)
 					}
 				} while (folded);
 
-				wavetable[i].wave[j] = amplitude - maxi;
+				wavetable[i].wave[j] = (dv_i32_t)(amplitude - maxi);
 
 				/* Square wave is simply the sign of a triangle wave
 				*/
@@ -147,7 +152,7 @@ void wave_generate(int wav)
 */
 void wave_start_mono(int wgen, int note, dv_i32_t harmonic)
 {
-	if ( wgen < 0 || wgen > N_TONEGEN || note < 0 || note >= 12 || harmonic < 0 )
+	if ( wgen < 0 || wgen >= N_TONEGEN || note < 0 || note >= 12 || harmonic <= 0 )
 		return;					/* Error */
 
 	tonegen[wgen].position = -harmonic;
@@ -159,7 +164,7 @@ void wave_start_mono(int wgen, int note, dv_i32_t harmonic)
 */
 void wave_stop_mono(int wgen)
 {
-	if ( wgen < 0 || wgen > N_TONEGEN )
+	if ( wgen < 0 || wgen >= N_TONEGEN )
 		return;					/* Error */
 
 	tonegen[wgen].root = DV_NULL;
@@ -171,7 +176,7 @@ void wave_stop_mono(int wgen)
 */
 dv_i32_t wave_play_mono(int wgen)
 {
-	if ( wgen < 0 || wgen > N_TONEGEN )
+	if ( wgen < 0 || wgen >= N_TONEGEN )
 		return 0;				/* Error */
 
 	if ( tonegen[wgen].root == DV_NULL )
