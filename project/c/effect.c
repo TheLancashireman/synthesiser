@@ -21,12 +21,39 @@
 #include <kernel/h/dv-types.h>
 #include <project/h/effect.h>
 
-effect_t *first = DV_NULL;
-
 /* This control structure controls a single, sequential processing sequence
  * However, it should be possible to extend to a multiprocessing environment
  * by having a "first" pointer per core and having some inter-core
  * communication stages
+*/
+struct effect_s effect_list;
+
+/* effect_init() - initialises the list of effect stages
+*/
+void effect_init(void)
+{
+	effect_list.next = DV_NULL;
+	effect_list.prev = DV_NULL;
+	effect_list.func = DV_NULL;
+	effect_list.control = DV_NULL;
+}
+
+/* effect_chain() - processes an effect chain from start to end
+*/
+dv_i64_t effect_chain(struct effect_s *e, dv_i64_t signal)
+{
+	dv_i64_t x = signal;
+
+	while ( e != DV_NULL )
+	{
+		x = e->func(e, x);
+		e = e->next;
+	}
+
+	return x;
+}
+
+/* effect_processor() - processes the list of effects
  *
  * Note: the stage input/output variable (x) is not initialized each time round the loop.
  * This permits some kind of feedback if needed later if needed.
@@ -35,16 +62,22 @@ effect_t *first = DV_NULL;
 */
 void effect_processor(void)
 {
-	dv_int64_t x = 0;
+	dv_i64_t x = 0;
 
 	for (;;)
 	{
-		effect_t *e = first;
-
-		while ( e != DV_NULL )
-		{
-			x = e->func(e, x);
-			e = e->next;
-		}
+		struct effect_s *e = effect_list.next;
+		x = effect_chain(e, x);
 	}
+}
+
+/* effect_append() - appends a new effect to the end of the list
+*/
+void effect_append(struct effect_s *e)
+{
+	e->next = DV_NULL;
+	e->prev = effect_list.prev;
+	effect_list.prev = e;
+	if ( effect_list.next == DV_NULL )
+		effect_list.next = e;
 }

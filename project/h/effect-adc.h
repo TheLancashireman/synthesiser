@@ -17,6 +17,9 @@
  *	You should have received a copy of the GNU General Public License
  *	along with SynthEffect.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef EFFECT_ADC_H
+#define EFFECT_ADC_H	1
+
 #include <kernel/h/dv-kconfig.h>
 #include <kernel/h/dv-types.h>
 
@@ -29,11 +32,7 @@ struct effect_adc_s
 
 extern struct effect_adc_s effect_adc;
 
-dv_i64_t effect_adc_input(struct effect_adc_input_s *adc, dv_i64_t unused_input);
+extern dv_i64_t effect_adc_input(struct effect_s *e, dv_i64_t signal);
+extern void effect_adc_init(struct effect_s *e);
 
-static inline void effect_adc_init(struct effect_s *effect)
-{
-	effect->func = &effect_adc_input;
-	effect->control = &effect_adc;
-	effect_adc.select = 1;
-}
+#endif

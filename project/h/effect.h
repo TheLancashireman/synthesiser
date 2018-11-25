@@ -40,16 +40,22 @@
  * The whole is managed using an effect_s structure that contains the head of the
  * list of transformations and some global configuration.
 */
-typedef struct effect_s effect_t;
-typedef dv_int64_t (*effectstage_t)(effect_t *, dv_int64_t);
+struct effect_s;	/* Forward */
+typedef dv_i64_t (*effectstage_t)(struct effect_s *, dv_i64_t);
 
 struct effect_s
 {
-	effect_t *next;
+	struct effect_s *next;
+	struct effect_s *prev;
 	effectstage_t func;
 	void *control;
 };
 
-extern effect_t *first;
+extern struct effect_s effect_list;
+
+extern void effect_init(void);
+extern dv_i64_t effect_chain(struct effect_s *e, dv_i64_t signal);
+extern void effect_processor(void);
+extern void effect_append(struct effect_s *e);
 
 #endif
