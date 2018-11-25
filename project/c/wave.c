@@ -31,14 +31,6 @@ const dv_i64_t maxi = 2000000000L;
 const dv_i64_t maxu = 4000000000L;
 #endif
 
-struct wavetable_s
-{
-	double f;
-	dv_i32_t nsamp;
-	dv_i32_t ncyc;
-	dv_i32_t *wave;
-};
-
 /* The values in this table were calculated by the "wave" host program (in the host-calc
  * directory)
 */
@@ -59,13 +51,6 @@ struct wavetable_s wavetable[12] =					/*		48000/Freq		*/
 };
 
 dv_i32_t wave_buffer[TOTAL_SAMPLES];
-
-struct tonegen_s
-{
-	struct wavetable_s *root;
-	dv_i32_t harmonic;
-	dv_i32_t position;
-};
 
 struct tonegen_s tonegen[N_TONEGEN];
 
