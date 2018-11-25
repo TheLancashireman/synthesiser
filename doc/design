@@ -1,0 +1,33 @@
+The basic concept is a chain of "effect stages" each of which takes an input signal,
+modifies it in some way, and produces an output signal. The C function that produces
+the effect takes its input signal as a parameter and returns its output signal.
+
+At the beginning of the chain (at least, for an effect unit for a conventional instrument)
+is an "ADC input" stage which discards its input signal and creates its output signal
+by reading from an ADC. This reading from the ADC produces the fundamental timebase for
+the entire system.
+
+At the end of the chain there's a "DAC output" stage that clips its input signal down to
+the range supported by the DAC, then sends the signal to the DAC. The return value ("output
+signal") is zero.
+
+Each intermediate effect stage creates an effect, or part of an effect. For example, an
+echo effect function would add a stored value from an array of previous invocations onto the input
+signal to produce the output signal. The gap to the previous invocation gives the echo time.
+Storing the input signal into the array would give a single echo. Storing the output signal
+(attenuated) would give a gradually fading sequence of echos.
+
+====
+
+(See Penfold book)
+
+For actual note generation (organ or synthesiser functionality) one might imagine the note generation
+(VCO) replacing the ADC input stage (or following it and discarding the ADC signal), followed by
+VCA and VCF effect stages, each of which is controlled by a network of LFOs and envelope shapers,
+which are also "effect stages" that copy their input signal to their output signal. This would give
+a monophonic (single note) synthesiser, but for n-polyphonic (or full polyphonic) each VCO/VCA/VCF
+stage will have to add its generated value to the output of the previous stage.
+
+Therefore in this implementation note generation uses an independent sequence of effect stages for
+each note and the outer effect stage adds the generated signal of the inner effect stage to its
+input signal to produce its output signal.
