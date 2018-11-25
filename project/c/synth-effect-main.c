@@ -55,10 +55,10 @@ void prj_main(void)
 		dv_panic(dv_panic_unimplemented, "wave_init", "Oops! wave buffer too small");
 	}
 
-	/* Start off with sawtooth
+	/* Generate a set of root waveforms
 	*/
 	dv_kprintf("prj_main: calling wave_generate(SAW).\n");
-	wave_generate(TRI);
+	wave_generate(SAW);
 
 	/* Timing for the dots
 	*/
@@ -77,7 +77,7 @@ void prj_main(void)
 
 		/* Play the note on the left channel. Right channel fixed at 0
 		*/
-		sGen = wave_play_mono(0);
+		sGen = wave_play_mono(0)/2;
 		dv_pcm_write(sGen);
 		dv_pcm_write(0);
 
