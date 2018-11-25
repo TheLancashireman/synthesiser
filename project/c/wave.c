@@ -23,13 +23,8 @@
 
 #define TOTAL_SAMPLES	89138
 
-#if 1
 const dv_i64_t maxi = 0x7fffffffL;
 const dv_i64_t maxu = 0xffffffffL;
-#else
-const dv_i64_t maxi = 2000000000L;
-const dv_i64_t maxu = 4000000000L;
-#endif
 
 /* The values in this table were calculated by the "wave" host program (in the host-calc
  * directory)
@@ -51,8 +46,6 @@ struct wavetable_s wavetable[12] =					/*		48000/Freq		*/
 };
 
 dv_i32_t wave_buffer[TOTAL_SAMPLES];
-
-struct tonegen_s tonegen[N_TONEGEN];
 
 /* wave_init() - initialise the wave tables for the 12 root waveforms.
  *
@@ -155,7 +148,7 @@ void wave_stop_mono(int wgen)
 	tonegen[wgen].root = DV_NULL;
 }
 
-/* wave_play_simple() - play a single, monophonic waveform from a wavetable
+/* wave_play_mono() - play a single, monophonic waveform from a wavetable
  *
  * Returns the next sample in the waveform.
 */
