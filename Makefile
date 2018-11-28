@@ -55,6 +55,7 @@ DV_LD_OBJS	+= $(DV_OBJ_D)/effect-adc.$(DV_O)
 DV_LD_OBJS	+= $(DV_OBJ_D)/effect-dac.$(DV_O)
 DV_LD_OBJS	+= $(DV_OBJ_D)/midi.$(DV_O)
 DV_LD_OBJS	+= $(DV_OBJ_D)/wave.$(DV_O)
+DV_LD_OBJS	+= $(DV_OBJ_D)/adsr.$(DV_O)
 
 # Include the board's file lists
 include $(DV_BOARD_D)/make/dv-board-list.make
