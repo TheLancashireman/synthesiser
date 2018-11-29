@@ -1,4 +1,4 @@
-/*	effect-synth.h - header file for synth note generator
+/*	synth-config.h - configuration header file for SynthEffect
  *
  *	Copyright 2018 David Haworth
  *
@@ -17,26 +17,17 @@
  *	You should have received a copy of the GNU General Public License
  *	along with SynthEffect.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef EFFECT_SYNTH_H
-#define EFFECT_SYNTH_H	1
+#ifndef SYNTH_CONFIG_H
+#define SYNTH_CONFIG_H	1
 
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
-#include <project/h/synth-config.h>
+/* Configuration settings:
+ *	SAMPLES_PER_SEC must match the hardware sampleÂrate
+ *	N_POLYPHONIC is the number of simultaneous synthesized notes
+ *	N_EFFECT_STAGES is the number of "effects" available. Includes all notes, plus ADC, DAC and any others.
+*/
 
-#include <project/h/effect.h>
-#include <project/h/adsr.h>
-#include <project/h/wave.h>
-
-struct effect_synth_s
-{
-	struct tonegen_s vco;
-	struct envelope_s shaper;
-};
-
-extern struct effect_synth_s notegen[N_POLYPHONIC];
-
-extern dv_i64_t effect_synth(struct effect_s *e, dv_i64_t signal);
-extern void effect_synth_init(struct effect_s *e);
+#define SAMPLES_PER_SEC		48000
+#define N_POLYPHONIC		16			/* No. of note generators */
+#define N_EFFECT_STAGES		20			/* Total no. of effects */
 
 #endif
