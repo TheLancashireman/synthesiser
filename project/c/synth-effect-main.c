@@ -30,18 +30,16 @@
 #include <devices/h/dv-arm-bcm2835-gpio.h>
 #include <devices/h/dv-arm-bcm2835-pcm.h>
 
+#include <project/h/synth-config.h>
 #include <project/h/midi.h>
 #include <project/h/wave.h>
 #include <project/h/effect.h>
 #include <project/h/effect-adc.h>
 #include <project/h/effect-dac.h>
 
-#define N_EFFECT_STAGES		20
 
 /* effect_synthcontrol() - a dummy effect stage to handle MIDI input, console I/O etc.
 */
-const dv_i32_t samples_per_sec = 48000;
-
 struct synthcontrol_s
 {
 	int dot_time;
@@ -59,7 +57,7 @@ dv_i64_t effect_synthcontrol(struct effect_s *e, dv_i64_t signal)
 	/* Alive indication.
 	*/
 	ctrl->dot_time ++;
-	if ( ctrl->dot_time >= samples_per_sec )
+	if ( ctrl->dot_time >= SAMPLES_PER_SEC )
 	{
 		dv_consoledriver.putc('.');			/* One dot per second */
 		ctrl->dot_time = 0;
@@ -86,6 +84,7 @@ dv_i64_t effect_synthcontrol(struct effect_s *e, dv_i64_t signal)
 		*/
 		if ( cmd[0] == 0x90 )	/* Note on */
 		{
+#if 0
 			int new_note = cmd[1];
 			if ( ctrl->current_note < 128 )
 			{
@@ -99,12 +98,15 @@ dv_i64_t effect_synthcontrol(struct effect_s *e, dv_i64_t signal)
 			int h = 1 << ((new_note+3)/12);
 			wave_start_mono(0, n, h);
 			dv_kprintf("start(0, %d, %d)\n", n, h);
+#endif
 		}
 		else if ( cmd[0] == 0x80 && ctrl->current_note == cmd[1] )	/* Note off, current note */
 		{
+#if 0
 			ctrl->current_note = 256;	/* Way out of range */
 			wave_stop_mono(0);
 			dv_kprintf("stop(0)\n");
+#endif
 		}
 	}
 
