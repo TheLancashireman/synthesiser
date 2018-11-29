@@ -55,55 +55,11 @@ struct tonegen_s
 	dv_i32_t position;
 };
 
-/* An envelope generator shapes the amplitude of a note over time. The envelope has four stages;
- * attack, decay, sustain, release. The envelope starts when the note is played.
- *	- attack it the period during which the volume increases to the maximum
- *	- decay is the perion during which the volume decreases to the sustain level
- *	- sustain is the remainder of the tom the note is held (e.g. key remains pressed on keyboard)
- *	- release is the period during which the volume decreases to zero
- *
- * If the note ends before the sustain level is reached the attack/decay stages continue and the release
- * stage starts as soon as the sustain level is reached.
- *
- * Thus an envelope is defined by three time parameters (attack, decay, release) and one volume parameter
- * (sustain)
- *
- * This is a very simple envelope in which the rise and fall are linear. It may be possible to
- * construct curved attack/decay/release stages along with a gradual decay during the sustain phase
- * to generate more "realistic" sounds like plucked or struck instruments. Alternatively, for these
- * sounds, the sustain phase can be omitted, or the sustain level set to zero. This needs experimentation.
- *
- * All the envelope generators are controlled by a single envelope.
-*/
-struct envelope_s
-{
-	dv_i32_t attack;		/* No of samples during which volume increases from 0 to max */
-	dv_i32_t decay;			/* No of samples during which volume decreases from max to sustain */
-	dv_i32_t sustain;		/* Volume as long as key is held. */
-	dv_i32_t release;		/* No of samples during which volume decreases from sustain to 0 */
-};
-
-struct envelopegen_s
-{
-	dv_i32_t position;		/* Increments once per sample until sustain is reached. */
-};
-
-/* A note generator consists of a tone generator and an envelope generator.
- * For a monophonic synthesiser there is a single note generator.
- * For full polyphonic operation, each note source (e.g. keyboard key) has its own note generator.
- * If managing a note generator for each key is not possible, a scheme where a free generator is used
- * for each keypress. If there is no free generator, the generator of the oldest note is stolen.
-*/
-struct notegen_s
-{
-	struct tonegen_s tone;
-	struct envelopegen_s envelope;
-};
-
 extern int wave_init(void);
 extern void wave_generate(int wav);
-extern void wave_start_mono(int wgen, int note, dv_i32_t harmonic);
-extern void wave_stop_mono(int wgen);
-extern dv_i32_t wave_play_mono(int wgen);
+
+extern void tone_start(struct tonegen_s *tg, int note, dv_i32_t harmonic);
+extern void tone_stop(struct tonegen_s *tg);
+extern dv_i32_t tone_play(struct tonegen_s *tg);
 
 #endif

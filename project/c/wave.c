@@ -126,42 +126,33 @@ void wave_generate(int wav)
 	}
 }
 
-/* wave_start_mono() - initialise a tone generator for a monophonic waveform
+/* tone_start() - initialise a tone generator for a single waveform
 */
-void wave_start_mono(int wgen, int note, dv_i32_t harmonic)
+void tone_start(struct tonegen_s *tg, int note, dv_i32_t harmonic)
 {
-	if ( wgen < 0 || wgen >= N_TONEGEN || note < 0 || note >= 12 || harmonic <= 0 )
-		return;					/* Error */
-
-	tonegen[wgen].position = -harmonic;
-	tonegen[wgen].harmonic = harmonic;
-	tonegen[wgen].root = &wavetable[note];
+	tg->position = -harmonic;
+	tg->harmonic = harmonic;
+	tg->root = &wavetable[note];
 }
 
-/* wave_start_mono() - initialise a tone generator for a monophonic waveform
+/* tone_start() - initialise a tone generator for a single waveform
 */
-void wave_stop_mono(int wgen)
+void tone_stop(struct tonegen_s *tg)
 {
-	if ( wgen < 0 || wgen >= N_TONEGEN )
-		return;					/* Error */
-
-	tonegen[wgen].root = DV_NULL;
+	tg->root = DV_NULL;
 }
 
-/* wave_play_mono() - play a single, monophonic waveform from a wavetable
+/* tone_play() - play a single waveform from a wavetable
  *
  * Returns the next sample in the waveform.
 */
-dv_i32_t wave_play_mono(int wgen)
+dv_i32_t tone_play(struct tonegen_s *tg)
 {
-	if ( wgen < 0 || wgen >= N_TONEGEN )
-		return 0;				/* Error */
-
-	if ( tonegen[wgen].root == DV_NULL )
+	if ( tg->root == DV_NULL )
 		return 0;				/* Tone is OFF */
 
-	tonegen[wgen].position += tonegen[wgen].harmonic;
-	tonegen[wgen].position %= tonegen[wgen].root->nsamp;
+	tg->position += tg->harmonic;
+	tg->position %= tg->root->nsamp;
 
-	return tonegen[wgen].root->wave[tonegen[wgen].position];
+	return tg->root->wave[tg->position];
 }
