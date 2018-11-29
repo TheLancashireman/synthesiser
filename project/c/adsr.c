@@ -42,6 +42,38 @@ void adsr_init(struct adsr_s *adsr, dv_i32_t a, dv_i32_t d, dv_i32_t s, dv_i32_t
 	adsr->tTotal = adsr->tAttack + adsr->tDecay + adsr->tRelease;
 }
 
+/* adsr_set_x() - four functions to set the adsr parameters individually
+*/
+void adsr_set_a(struct adsr_s *adsr, dv_i32_t a, dv_i32_t sps)
+{
+	adsr->a = a;
+	adsr->tAttack = (sps * a)/AMAX;
+	adsr->tSustain = adsr->tAttack + adsr->tDecay;
+	adsr->tTotal = adsr->tAttack + adsr->tDecay + adsr->tRelease;
+}
+
+void adsr_set_d(struct adsr_s *adsr, dv_i32_t d, dv_i32_t sps)
+{
+	adsr->d = d;
+	adsr->tDecay = (sps * d)/AMAX;
+	adsr->tSustain = adsr->tAttack + adsr->tDecay;
+	adsr->tTotal = adsr->tAttack + adsr->tDecay + adsr->tRelease;
+}
+
+void adsr_set_s(struct adsr_s *adsr, dv_i32_t s, dv_i32_t sps)
+{
+	adsr->s = s;
+	adsr->gSustain = (s > GMAX) ? GMAX : s;
+	adsr->gDecay = GMAX - adsr->gSustain;
+}
+
+void adsr_set_r(struct adsr_s *adsr, dv_i32_t r, dv_i32_t sps)
+{
+	adsr->r = r;
+	adsr->tRelease = (sps * r)/RMAX;
+	adsr->tTotal = adsr->tAttack + adsr->tDecay + adsr->tRelease;
+}
+
 /* envelope_gen() - generates an envelope signal when called once for every sample.
 */
 dv_i32_t envelope_gen(struct envelope_s *env)
@@ -68,9 +100,9 @@ dv_i32_t envelope_gen(struct envelope_s *env)
 
 	env->position++;
 
-	if ( position > adsr->tTotal )
+	if ( env->position > adsr->tTotal )
 	{
-		position = -1;
+		env->position = -1;
 		return 0;
 	}
 

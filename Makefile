@@ -54,7 +54,7 @@ DV_LD_OBJS	+= $(DV_OBJ_D)/effect.$(DV_O)
 DV_LD_OBJS	+= $(DV_OBJ_D)/effect-adc.$(DV_O)
 DV_LD_OBJS	+= $(DV_OBJ_D)/effect-dac.$(DV_O)
 DV_LD_OBJS	+= $(DV_OBJ_D)/midi.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/wave.$(DV_O)
+#DV_LD_OBJS	+= $(DV_OBJ_D)/wave.$(DV_O)
 DV_LD_OBJS	+= $(DV_OBJ_D)/adsr.$(DV_O)
 
 # Include the board's file lists

@@ -64,4 +64,6 @@ struct envelope_s
 	int position;				/* Current position in the envelope */
 };
 
+dv_i32_t envelope_gen(struct envelope_s *env);
+
 #endif
