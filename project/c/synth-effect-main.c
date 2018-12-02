@@ -36,6 +36,7 @@
 #include <project/h/effect.h>
 #include <project/h/effect-adc.h>
 #include <project/h/effect-dac.h>
+#include <project/h/effect-synth.h>
 
 
 /* effect_synthcontrol() - a dummy effect stage to handle MIDI input, console I/O etc.
@@ -49,6 +50,17 @@ struct synthcontrol_s
 };
 
 struct synthcontrol_s synthcontrol;
+
+struct effect_s effect_stage[N_EFFECT_STAGES];
+
+/* Fixed stages
+ *
+ * Note: the index does not imply the order.
+*/
+#define EFFECT_STAGE_ADC	0
+#define EFFECT_STAGE_DAC	1
+#define EFFECT_STAGE_CTRL	2		/* For single-core */
+#define EFFECT_STAGE_SYNTH	3
 
 dv_i64_t effect_synthcontrol(struct effect_s *e, dv_i64_t signal)
 {
@@ -75,38 +87,24 @@ dv_i64_t effect_synthcontrol(struct effect_s *e, dv_i64_t signal)
 	unsigned *cmd = midi_scan();
 	if ( cmd != DV_NULL )
 	{
-		/* Quick hack of a monophonic synthesiser. Each new note replaces the old one.
-		 * Note off only recognised if it's the current note.
-		*/
 		/* Updating the generator data like this only works if generation is running in the
 		 * same thread as the midi detection.
 		 * If not, we need some synchronisation.
 		*/
-		if ( cmd[0] == 0x90 )	/* Note on */
+		if ( cmd[0] == 0x90 )		/* Note on */
 		{
-#if 0
-			int new_note = cmd[1];
-			if ( ctrl->current_note < 128 )
-			{
-				wave_stop_mono(0);
-				dv_kprintf("stop(0)\n");
-			}
-			ctrl->current_note = new_note;
-			/* Midi note 0 is C 8.175 Hz (i.e. the C of our root table, index 3)
-			*/
-			int n = (new_note+3)%12;
-			int h = 1 << ((new_note+3)/12);
-			wave_start_mono(0, n, h);
-			dv_kprintf("start(0, %d, %d)\n", n, h);
-#endif
+			synth_start_note(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1]);
+			dv_kprintf("start(%d)\n", cmd[1]);
 		}
-		else if ( cmd[0] == 0x80 && ctrl->current_note == cmd[1] )	/* Note off, current note */
+		else if ( cmd[0] == 0x80 )	/* Note off */
 		{
-#if 0
-			ctrl->current_note = 256;	/* Way out of range */
-			wave_stop_mono(0);
-			dv_kprintf("stop(0)\n");
-#endif
+			synth_stop_note(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1]);
+			dv_kprintf("stop(%d)\n", cmd[1]);
+		}
+		else if ( cmd[0] == 0xb0 )	/* Controller change */
+		{
+			synth_control(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1], cmd[2]);
+			dv_kprintf("ctrl(%d, %d)\n", cmd[1], cmd[2]);
 		}
 	}
 
@@ -117,16 +115,6 @@ dv_i64_t effect_synthcontrol(struct effect_s *e, dv_i64_t signal)
  *
  * This function runs in a thread, so it really shouldn't call dv_kprintf()
 */
-struct effect_s effect_stage[N_EFFECT_STAGES];
-
-/* Fixed stages
- *
- * Note: the index does not imply the order.
-*/
-#define EFFECT_STAGE_ADC	0
-#define EFFECT_STAGE_DAC	1
-#define EFFECT_STAGE_CTRL	2		/* For single-core */
-
 void prj_main(void)
 {
 	dv_kprintf("prj_main: started.\n");
@@ -158,6 +146,9 @@ void prj_main(void)
 	effect_stage[EFFECT_STAGE_CTRL].func = &effect_synthcontrol;
 	effect_stage[EFFECT_STAGE_CTRL].control = &synthcontrol;
 	effect_append(&effect_stage[EFFECT_STAGE_CTRL]);
+
+	effect_synth_init(&effect_stage[EFFECT_STAGE_CTRL+1]);
+	effect_append(&effect_stage[EFFECT_STAGE_CTRL+1]);
 	
 
 	effect_dac_init(&effect_stage[EFFECT_STAGE_DAC]);		/* DAC output stage */

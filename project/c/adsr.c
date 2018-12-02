@@ -32,12 +32,12 @@ void adsr_init(struct adsr_s *adsr, dv_i32_t a, dv_i32_t d, dv_i32_t s, dv_i32_t
 
 	/* Shouldn't need 64-bit computation for this. Worst us 48000*1024 at current estimates
 	*/
-	adsr->tAttack = (sps * a)/AMAX;
-	adsr->tDecay = (sps * d)/AMAX;
-	adsr->gSustain = (s > GMAX) ? GMAX : s;
-	adsr->tRelease = (sps * r)/RMAX;
+	adsr->tAttack = (sps * a)/ADSR_AMAX;
+	adsr->tDecay = (sps * d)/ADSR_DMAX;
+	adsr->gSustain = (s > ADSR_GMAX) ? ADSR_GMAX : s;
+	adsr->tRelease = (sps * r)/ADSR_RMAX;
 
-	adsr->gDecay = GMAX - adsr->gSustain;
+	adsr->gDecay = ADSR_GMAX - adsr->gSustain;
 	adsr->tSustain = adsr->tAttack + adsr->tDecay;
 	adsr->tTotal = adsr->tAttack + adsr->tDecay + adsr->tRelease;
 }
@@ -47,7 +47,7 @@ void adsr_init(struct adsr_s *adsr, dv_i32_t a, dv_i32_t d, dv_i32_t s, dv_i32_t
 void adsr_set_a(struct adsr_s *adsr, dv_i32_t a, dv_i32_t sps)
 {
 	adsr->a = a;
-	adsr->tAttack = (sps * a)/AMAX;
+	adsr->tAttack = (sps * a)/ADSR_AMAX;
 	adsr->tSustain = adsr->tAttack + adsr->tDecay;
 	adsr->tTotal = adsr->tAttack + adsr->tDecay + adsr->tRelease;
 }
@@ -55,7 +55,7 @@ void adsr_set_a(struct adsr_s *adsr, dv_i32_t a, dv_i32_t sps)
 void adsr_set_d(struct adsr_s *adsr, dv_i32_t d, dv_i32_t sps)
 {
 	adsr->d = d;
-	adsr->tDecay = (sps * d)/AMAX;
+	adsr->tDecay = (sps * d)/ADSR_AMAX;
 	adsr->tSustain = adsr->tAttack + adsr->tDecay;
 	adsr->tTotal = adsr->tAttack + adsr->tDecay + adsr->tRelease;
 }
@@ -63,14 +63,14 @@ void adsr_set_d(struct adsr_s *adsr, dv_i32_t d, dv_i32_t sps)
 void adsr_set_s(struct adsr_s *adsr, dv_i32_t s, dv_i32_t sps)
 {
 	adsr->s = s;
-	adsr->gSustain = (s > GMAX) ? GMAX : s;
-	adsr->gDecay = GMAX - adsr->gSustain;
+	adsr->gSustain = (s > ADSR_GMAX) ? ADSR_GMAX : s;
+	adsr->gDecay = ADSR_GMAX - adsr->gSustain;
 }
 
 void adsr_set_r(struct adsr_s *adsr, dv_i32_t r, dv_i32_t sps)
 {
 	adsr->r = r;
-	adsr->tRelease = (sps * r)/RMAX;
+	adsr->tRelease = (sps * r)/ADSR_RMAX;
 	adsr->tTotal = adsr->tAttack + adsr->tDecay + adsr->tRelease;
 }
 
@@ -86,7 +86,7 @@ dv_i32_t envelope_gen(struct envelope_s *env)
 	if ( env->position < adsr->tAttack )
 	{
 		env->position++;
-		return (GMAX * env->position) / adsr->tAttack;
+		return (ADSR_GMAX * env->position) / adsr->tAttack;
 	}
 
 	if ( env->position < adsr->tSustain )

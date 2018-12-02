@@ -22,11 +22,7 @@
 
 #include <kernel/h/dv-kconfig.h>
 #include <kernel/h/dv-types.h>
-
-#define GMAX	1000	/* Max output level. This value represents 1.0 */
-#define AMAX	2000	/* a = 1000 -> 2 secs */
-#define DMAX	2000	/* d = 1000 -> 2 secs */
-#define RMAX	2000	/* r = 1000 -> 2 secs */
+#include <project/h/synth-config.h>
 
 /* adsr_s - structure that contains the envelope generator's parameters.
  *
@@ -65,5 +61,21 @@ struct envelope_s
 };
 
 dv_i32_t envelope_gen(struct envelope_s *env);
+
+static inline void envelope_start(struct envelope_s *env)
+{
+	env->position = 0;
+}
+
+static inline void envelope_stop(struct envelope_s *env)
+{
+	/* Go straight to the release phase unless already released.
+	 *
+	 * This might be a bit drastic if the note has a low sustain level and is released
+	 * during the attack or decay phase. We'll have to see.
+	*/
+	if ( env->position > 0  && env->position <= env->adsr->tSustain )
+		env->position = env->adsr->tSustain + 1;
+}
 
 #endif

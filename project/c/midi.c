@@ -26,6 +26,12 @@ static unsigned midi_command[3];		/* Buffer for receiving MIDI commands */
 static int midi_idx = 0;
 
 /* midi_scan() - watch for midi commands in console input stream
+ *
+ * Only 3-byte midi messages are considered. Those with 2 bytes stay in the buffer until the next
+ * start-of-message (MSB set) arrives and will be discarded then.
+ *
+ * System exclusive (0xf0 ... 0xf7). First 3 bytes get handled as a message. Remaining data
+ * bytes ignored. Terminator (0xf7) starts a new message but will be discarded as for a short message.
 */
 unsigned *midi_scan(void)
 {
