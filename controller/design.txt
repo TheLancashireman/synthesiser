@@ -1,0 +1,17 @@
+Synth keyboard scanner
+
+
+Arduino nano:
+ 4 output pins to pins s0-s3 of a set of 74hc4067 analogue mux/demux ICs
+ n analogue input pins (one from each 74hc4067)
+
+ scan code
+	forever
+		timing delay() --- scan every 100 ms
+		foreach channel 0..15
+			output the channel number (s0-s3) to select the channels
+			delay(settling time)
+			for each ADC input 0..nADC-1
+				read anaogue value
+				if different from last time OR last transmit > poll time ago
+					send midi command
