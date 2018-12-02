@@ -67,6 +67,8 @@ struct keystate_s
 
 keystate_s keystate[kbd_nkeys];
 
+#include "../arduino-common/midi-thru.h"
+
 /* Keymap.
  * Numbers in the range 0..127 are midi notes.
  * Numbers in the range 0x80-0xfe are switches.
@@ -132,6 +134,7 @@ void loop(void)
 	for (;;)
 	{
 		do {
+			midi_thru();
 		} while ( (millis() - then) < 10 );
 
 		then += 10;
