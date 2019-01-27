@@ -33,6 +33,7 @@ void effect_dac_init(struct effect_s *e)
 {
 	e->func = &effect_dac_output;
 	e->control = &effect_dac;
+	e->name = "dac";
 	effect_dac.select = 1;
 	effect_dac.max = 0x7fffffffL;
 	effect_dac.min = 0x80000001L;

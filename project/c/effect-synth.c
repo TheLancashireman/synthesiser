@@ -57,6 +57,7 @@ void effect_synth_init(struct effect_s *e)
 {
 	e->func = &effect_synth;
 	e->control = &synth;
+	e->name = "synth";
 
 	adsr_init(&note_adsr, 0, 0, ADSR_GMAX, 0, SAMPLES_PER_SEC);
 

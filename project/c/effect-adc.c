@@ -33,6 +33,7 @@ void effect_adc_init(struct effect_s *e)
 {
 	e->func = &effect_adc_input;
 	e->control = &effect_adc;
+	e->name = "adc";
 	effect_adc.select = 1;
 }
 
