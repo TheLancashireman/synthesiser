@@ -19,35 +19,71 @@
 */
 
 // Pins for data lines
-#define data_out_0	7		// PD4		}
-#define data_out_1	8		// PD5		} Data selectors for 74hc4067
-#define data_out_2	9		// PD6		}
-#define data_out_3	10		// PD7		}
+#define data_out_0	10		// PD7		}
+#define data_out_1	9		// PD6		} Data selectors for 74hc4067
+#define data_out_2	8		// PD5		}
+#define data_out_3	7		// PD4		}
 
 #define n_analogue	2
 
 #define midi		1		/* Set to 1 for midi, 0 for finding mapping */
 
 #define n_ctrl		1		/* No. of controllers */
+#define max_ctrl	32		/* Max. no of controllers (2 mux boards) */
 
 #define max_age		100		/* 10 seconds - when nothing happening */
 #define chg_age		20		/* 20 seconds - after a significant change */
 
 #define threshold	2
 
+/* ctrldef[] - an array of all possible controllers (given the hardware setup)
+ *
+ * Only the first n_ctrl are used.
+ *
+ * The order is not important, except that it is slightly more efficient to order the
+ * controllers so that those with the same select pins and different analogue pins
+ * come together.
+*/
+
 const struct ctrldef_s
 {
 	uint8_t ctrl_no;		/* MIDI controller number */
 	uint8_t select;			/* Selector value (0..15) */
 	uint8_t pin;			/* Analogue pin number (0..7) */
-} ctrldef[n_ctrl] =
+} ctrldef[max_ctrl] =
 {
 	{	0x00,	0x0,	A7	},
-#if 0
 	{	0x01,	0x1,	A7	},
 	{	0x02,	0x2,	A7	},
-	{	0x03,	0x3,	A7	}
-#endif
+	{	0x03,	0x3,	A7	},
+	{	0x04,	0x4,	A7	},
+	{	0x05,	0x5,	A7	},
+	{	0x06,	0x6,	A7	},
+	{	0x07,	0x7,	A7	},
+	{	0x08,	0x8,	A7	},
+	{	0x09,	0x9,	A7	},
+	{	0x0a,	0xa,	A7	},
+	{	0x0b,	0xb,	A7	},
+	{	0x0c,	0xc,	A7	},
+	{	0x0d,	0xd,	A7	},
+	{	0x0e,	0xe,	A7	},
+	{	0x0f,	0xf,	A7	},
+	{	0x10,	0x0,	A6	},
+	{	0x11,	0x1,	A6	},
+	{	0x12,	0x2,	A6	},
+	{	0x13,	0x3,	A6	},
+	{	0x14,	0x4,	A6	},
+	{	0x15,	0x5,	A6	},
+	{	0x16,	0x6,	A6	},
+	{	0x17,	0x7,	A6	},
+	{	0x18,	0x8,	A6	},
+	{	0x19,	0x9,	A6	},
+	{	0x1a,	0xa,	A6	},
+	{	0x1b,	0xb,	A6	},
+	{	0x1c,	0xc,	A6	},
+	{	0x1d,	0xd,	A6	},
+	{	0x1e,	0xe,	A6	},
+	{	0x1f,	0xf,	A6	},
 };
 
 struct ctrlstate_s
