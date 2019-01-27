@@ -93,18 +93,18 @@ dv_i64_t effect_synthcontrol(struct effect_s *e, dv_i64_t signal)
 		*/
 		if ( cmd[0] == 0x90 )		/* Note on */
 		{
-			synth_start_note(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1]);
 			dv_kprintf("start(%d)\n", cmd[1]);
+			synth_start_note(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1]);
 		}
 		else if ( cmd[0] == 0x80 )	/* Note off */
 		{
-			synth_stop_note(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1]);
 			dv_kprintf("stop(%d)\n", cmd[1]);
+			synth_stop_note(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1]);
 		}
 		else if ( cmd[0] == 0xb0 )	/* Controller change */
 		{
-			synth_control(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1], cmd[2]);
 			dv_kprintf("ctrl(%d, %d)\n", cmd[1], cmd[2]);
+			synth_control(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1], cmd[2]);
 		}
 	}
 
@@ -134,32 +134,54 @@ void prj_main(void)
 
 	/* Initialise an initial set of effect stages
 	*/
+	dv_kprintf("prj_main: calling effect_init().\n");
 	effect_init();
 
+	dv_kprintf("prj_main: adding ADC effect\n");
 	effect_adc_init(&effect_stage[EFFECT_STAGE_ADC]);
 	effect_append(&effect_stage[EFFECT_STAGE_ADC]);
 
+	dv_kprintf("prj_main: adding synth_control effect\n");
 	synthcontrol.dot_time = 0;
 	synthcontrol.dot_line_count = 0;
 	synthcontrol.current_note = 256;
 	synthcontrol.passthru = 0;
 	effect_stage[EFFECT_STAGE_CTRL].func = &effect_synthcontrol;
 	effect_stage[EFFECT_STAGE_CTRL].control = &synthcontrol;
+	effect_stage[EFFECT_STAGE_CTRL].name = "synthcontrol";
 	effect_append(&effect_stage[EFFECT_STAGE_CTRL]);
 
-	effect_synth_init(&effect_stage[EFFECT_STAGE_CTRL+1]);
-	effect_append(&effect_stage[EFFECT_STAGE_CTRL+1]);
-	
+	dv_kprintf("prj_main: adding synth effect\n");
+	effect_synth_init(&effect_stage[EFFECT_STAGE_SYNTH]);
+	effect_append(&effect_stage[EFFECT_STAGE_SYNTH]);
 
+	dv_kprintf("prj_main: adding DAC effect\n");
 	effect_dac_init(&effect_stage[EFFECT_STAGE_DAC]);		/* DAC output stage */
 	effect_append(&effect_stage[EFFECT_STAGE_DAC]);
 
+	{
+		struct effect_s *e = effect_list.next;
+
+		dv_kprintf("List of effect processors:\n");
+		while ( e != DV_NULL )
+		{
+			if ( e->name == DV_NULL )
+				dv_kprintf("***Unknown***\n");
+			else
+				dv_kprintf("%s\n", e->name);
+
+			e = e->next;
+		}
+	}
+
 	/* Initialise the PCM hardware for I2S
 	*/
+	dv_kprintf("prj_main: calling dv_pcm_init_i2s()\n");
 	dv_pcm_init_i2s();
 
 	/* Do the stuff!
 	*/
+	dv_kprintf("prj_main: calling effect_processor()\n");
 	effect_processor();		/* Never returns */
 }
 
