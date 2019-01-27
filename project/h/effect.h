@@ -49,6 +49,7 @@ struct effect_s
 	struct effect_s *prev;
 	effectstage_t func;
 	void *control;
+	char *name;
 };
 
 extern struct effect_s effect_list;
