@@ -76,8 +76,16 @@ void effect_processor(void)
 void effect_append(struct effect_s *e)
 {
 	e->next = DV_NULL;
-	e->prev = effect_list.prev;
-	effect_list.prev = e;
 	if ( effect_list.next == DV_NULL )
+	{
 		effect_list.next = e;
+		effect_list.prev = e;
+		e->prev = DV_NULL;
+	}
+	else
+	{
+		effect_list.prev->next = e;
+		e->prev = effect_list.prev;
+		effect_list.prev = e;
+	}
 }
