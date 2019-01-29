@@ -17,94 +17,114 @@
 #	You should have received a copy of the GNU General Public License
 #	along with $SYNTH.  If not, see <http://www.gnu.org/licenses/>.
 
-# Find out where we are :-)
-PRJ_ROOT		?= $(shell pwd)
-DV_ROOT			= $(PRJ_ROOT)/../davros/davros-3
+DV_ROOT		?= /data1/projects/davros
+DVSK_ROOT	= $(DV_ROOT)/davroska
 
-# Select your board directory here
-#DV_BOARD_D 		?=	$(DV_ROOT)/board/arm/raspberry-pi
-DV_BOARD_D 		?=	$(DV_ROOT)/board/arm64/raspberry-pi-3
+# Board settings
+DV_BOARD 	?=	pi3-arm64
 
-DV_COMPILER		?=	gnu
-
-ifeq ($(DV_BOARD_D), $(DV_ROOT)/board/arm64/raspberry-pi-3)
-
-# 64-bit
-
+# Compiler settings
 DV_GNU_D	?=	/data1/gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-elf
-LD_OPT		+= -e dv_reset
-#LD_OPT		+= -T $(DV_BOARD_D)/ldscript/pi3-64.ldscript
-LD_OPT		+= -T $(DV_BOARD_D)/ldscript/rpi3-0based.ldscript
 
-else
+DV_GCC		?=	$(DV_GNU_D)/bin/aarch64-elf-gcc
+DV_LD		?=	$(DV_GNU_D)/bin/aarch64-elf-ld
+DV_OBJCOPY	?=	$(DV_GNU_D)/bin/aarch64-elf-objcopy
+DV_LDLIB_D	?=	$(DV_GNU_D)/aarch64-elf/libc/usr/lib/
+DV_LDSCRIPT ?=	$(DVSK_ROOT)/hardware/arm64/ld/dv-pi3.ldscript
 
-# 32-bit
+DV_ENTRY	?=	dv_reset
 
-DV_GNU_D	?=	/data1/gnu/gcc-linaro-6.3.1-2017.02-x86_64_arm-eabi
-LD_OPT		+= -e dv_trap_reset
-LD_OPT		+= -T $(DV_BOARD_D)/ldscript/pi-zero.ldscript
+DV_BIN_D	=	bin
+DV_OBJ_D	=	obj
 
-endif
+CC_OPT		+=	-D DV_DAVROSKA=1
+CC_OPT		+=	-I project/h
+CC_OPT		+=	-I $(DVSK_ROOT)/h
+CC_OPT		+=	-I $(DVSK_ROOT)/hardware
+CC_OPT		+=	-I $(DV_ROOT)/devices/h
+CC_OPT		+=	-I $(DV_ROOT)/lib/h
+CC_OPT		+=	-Wall
+CC_OPT		+=	-fno-common
 
-DV_LD_OBJS	+= $(DV_OBJ_D)/dv-vectors.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/dv-c0.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/prj-vectors.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/synth-effect-main.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/effect.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/effect-adc.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/effect-dac.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/effect-synth.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/midi.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/wave.$(DV_O)
-DV_LD_OBJS	+= $(DV_OBJ_D)/adsr.$(DV_O)
+LD_OPT		+=	-e $(DV_ENTRY)
+LD_OPT		+=	-T $(DV_LDSCRIPT)
+LD_OPT		+=	-L $(DV_LDLIB_D)
+LD_OPT		+=	-lc
 
-# Include the board's file lists
-include $(DV_BOARD_D)/make/dv-board-list.make
+# project files
+DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-hardware.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-main.o
 
-#CC_OPT		+= -O2
+#DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-c0.o
+#DV_LD_OBJS	+=	$(DV_OBJ_D)/prj-vectors.o
+#DV_LD_OBJS	+=	$(DV_OBJ_D)/synth-effect-main.o
+#DV_LD_OBJS	+=	$(DV_OBJ_D)/effect.o
+#DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-adc.o
+#DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-dac.o
+#DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-synth.o
+#DV_LD_OBJS	+=	$(DV_OBJ_D)/midi.o
+#DV_LD_OBJS	+=	$(DV_OBJ_D)/wave.o
+#DV_LD_OBJS	+=	$(DV_OBJ_D)/adsr.o
 
-VPATH       += project/c
-VPATH       += project/s
-VPATH       += $(DV_BOARD_D)/c
-VPATH       += $(DV_BOARD_D)/s
+# davroska and associated library files
+DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-time.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-extended.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-printf.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-xprintf.o
 
-DV_KLIB	= $(DV_LIB_D)/lib$(DV_KLIB_NAME).$(DV_A)
-DV_ULIB = $(DV_LIB_D)/lib$(DV_ULIB_NAME).$(DV_A)
+# davroska pi3-arm64 files 
+DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-arm64.o
 
-# Include the board's make selections
-include $(DV_BOARD_D)/make/dv-board.make
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm-bcm2835-uart.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm-bcm2835-gpio.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm-bcm2835-interruptcontroller.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm-bcm2836-interruptcontroller.o
 
-include $(DV_ROOT)/make/dv-defs.make
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-armv8-mmu.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm64-setmmuregisters.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm64-reset.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-switchcall.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-switch-el3el2.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-switch-el2el1.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-vectors.o
 
-.PHONY:		default all help klib ulib clean srec
+
+VPATH		+=	project/c
+VPATH		+=	project/s
+VPATH		+=	$(DVSK_ROOT)/c
+VPATH		+=	$(DVSK_ROOT)/hardware/arm64/c
+VPATH		+=	$(DVSK_ROOT)/hardware/arm64/s
+VPATH		+=	$(DVSK_ROOT)/hardware/common/c
+VPATH		+=	$(DV_ROOT)/lib/c
+VPATH		+=	$(DV_ROOT)/devices/c
+VPATH		+=	$(DV_ROOT)/devices/s
+
+.PHONY:		default all help clean srec
 
 default:	all
 
-all:		klib ulib bin srec
+all:		$(DV_OBJ_D) $(DV_BIN_D) elf
 
-klib:		$(DV_KLIB)
+clean:
+	-rm -rf $(DV_OBJ_D) $(DV_BIN_D)
 
-ulib:		$(DV_ULIB)
+elf:		$(DV_BIN_D)/synth.elf
 
-bin:		$(DV_BIN_D)/synth.bin
+$(DV_BIN_D)/synth.elf:	$(DV_LD_OBJS)
+	$(DV_LD) -o $@ $(DV_LD_OBJS) $(LD_LIB) $(LD_OPT)
 
-srec:		$(DV_BIN_D)/synth.srec
+$(DV_OBJ_D)/%.o:	%.c
+	$(DV_GCC) $(CC_OPT) -o $@ -c $<
 
-$(DV_BIN_D)/synth.srec:	 $(DV_BIN_D)/synth.elf
-	$(dv_elf2srec)
+$(DV_OBJ_D)/%.o:	%.S
+	$(DV_GCC) $(CC_OPT) -o $@ -c $<
 
-$(DV_BIN_D)/synth.bin:	 $(DV_BIN_D)/synth.elf
-	$(dv_elf2bin)
+$(DV_BIN_D):
+	mkdir -p bin
 
-$(DV_BIN_D)/synth.elf:	$(DV_LD_OBJS) $(DV_KLIB) $(DV_ULIB)
-	$(dv_ld)
+$(DV_OBJ_D):
+	mkdir -p obj
 
-install:	$(DV_BIN_D)/synth.bin
-	cp $(DV_BIN_D)/synth.bin ../../raspberry-pi/usb-zero/msd/kernel.img
-
-
-include $(DV_ROOT)/make/dv-commontargets.make
-include $(DV_ROOT)/cpufamily/$(DV_FAMILY)/make/dv-$(DV_FAMILY)-$(DV_COMPILER).make
-include $(DV_ROOT)/make/dv-rules.make
-include $(DV_ROOT)/make/dv-klib.make
-include $(DV_ROOT)/make/dv-ulib.make
+srec:		all
+	$(DV_OBJCOPY) bin/synth.elf -O srec --srec-forceS3 /dev/stdout | dos2unix | egrep -v '^S3..........00*..$$' > bin
