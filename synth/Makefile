@@ -38,7 +38,7 @@ DV_BIN_D	=	bin
 DV_OBJ_D	=	obj
 
 CC_OPT		+=	-D DV_DAVROSKA=1
-CC_OPT		+=	-I project/h
+CC_OPT		+=	-I h
 CC_OPT		+=	-I $(DVSK_ROOT)/h
 CC_OPT		+=	-I $(DVSK_ROOT)/hardware
 CC_OPT		+=	-I $(DV_ROOT)/devices/h
@@ -90,8 +90,8 @@ DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-switch-el2el1.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-vectors.o
 
 
-VPATH		+=	project/c
-VPATH		+=	project/s
+VPATH		+=	c
+VPATH		+=	s
 VPATH		+=	$(DVSK_ROOT)/c
 VPATH		+=	$(DVSK_ROOT)/hardware/arm64/c
 VPATH		+=	$(DVSK_ROOT)/hardware/arm64/s
