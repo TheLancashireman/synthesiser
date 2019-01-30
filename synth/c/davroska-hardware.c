@@ -120,6 +120,73 @@ static void dv_init_core(void)
 	}
 }
 
+/* dv_core1_start() - core 1 starts here
+*/
+void dv_core1_start(void)
+{
+	/* Initialise bss
+	*/
+	dv_memset32(&dv_start_bss, 0,
+		((dv_address_t)&dv_end_bss - (dv_address_t)&dv_start_bss + sizeof(dv_u32_t) - 1) / sizeof(dv_u32_t));
+
+	/* Initialise uart and connect it to the stdio functions
+	*/
+    dv_arm_bcm2835_uart_console();
+	dv_printf("pi-3-arm64 starting core 1 ...\n");
+
+	dv_init_core();
+	dv_armv8_mmu_setup(0);
+
+	for (;;)
+	{
+	}
+}
+
+/* dv_core2_start() - core 2 starts here
+*/
+void dv_core2_start(void)
+{
+	/* Initialise bss
+	*/
+	dv_memset32(&dv_start_bss, 0,
+		((dv_address_t)&dv_end_bss - (dv_address_t)&dv_start_bss + sizeof(dv_u32_t) - 1) / sizeof(dv_u32_t));
+
+	/* Initialise uart and connect it to the stdio functions
+	*/
+    dv_arm_bcm2835_uart_console();
+	dv_printf("pi-3-arm64 starting core 2 ...\n");
+
+	dv_init_core();
+	dv_armv8_mmu_setup(0);
+
+	for (;;)
+	{
+	}
+}
+
+/* dv_core3_start() - core 3 starts here
+*/
+void dv_core3_start(void)
+{
+	/* Initialise bss
+	*/
+	dv_memset32(&dv_start_bss, 0,
+		((dv_address_t)&dv_end_bss - (dv_address_t)&dv_start_bss + sizeof(dv_u32_t) - 1) / sizeof(dv_u32_t));
+
+	/* Initialise uart and connect it to the stdio functions
+	*/
+    dv_arm_bcm2835_uart_console();
+	dv_printf("pi-3-arm64 starting core 3 ...\n");
+
+	dv_init_core();
+	dv_armv8_mmu_setup(0);
+
+	for (;;)
+	{
+	}
+}
+
+
 /* Assorted panic trampolines for use in assembly language code.
 */
 void dv_panic_return_from_switchcall_function(void)

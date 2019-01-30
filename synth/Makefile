@@ -127,4 +127,4 @@ $(DV_OBJ_D):
 	mkdir -p obj
 
 srec:		all
-	$(DV_OBJCOPY) bin/synth.elf -O srec --srec-forceS3 /dev/stdout | dos2unix | egrep -v '^S3..........00*..$$' > bin
+	$(DV_OBJCOPY) bin/synth.elf -O srec --srec-forceS3 /dev/stdout | dos2unix | egrep -v '^S3..........00*..$$' > bin/synth.srec
