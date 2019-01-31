@@ -20,8 +20,8 @@
 #ifndef wave_h
 #define wave_h	1
 
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
+#include <dv-config.h>
+#include <davroska.h>
 
 #define SAW	1
 #define TRI	2

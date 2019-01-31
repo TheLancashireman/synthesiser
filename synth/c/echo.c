@@ -14,9 +14,9 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with $(NAME).  If not, see <http://www.gnu.org/licenses/>.
- *
- * $Id$
 */
+#include <dv-config.h>
+#include <davroska.h>
 #include <effect.h>
 
 /* The echo effect works by adding an earlier sample onto the current sample.

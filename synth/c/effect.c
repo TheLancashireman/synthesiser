@@ -17,9 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with SynthEffect  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
-#include <project/h/effect.h>
+#include <dv-config.h>
+#include <davroska.h>
+#include <effect.h>
 
 /* This control structure controls a single, sequential processing sequence
  * However, it should be possible to extend to a multiprocessing environment

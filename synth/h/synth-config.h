@@ -45,4 +45,10 @@
 
 #define SYNTH_CTRL_N_POLY		128	/* No. of polyphonic channels */
 
+extern void syntheffect_init();
+extern void panic(char *func, char *msg);
+extern void run_core1(void);
+extern void run_core2(void);
+extern void run_core3(void);
+
 #endif

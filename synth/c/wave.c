@@ -17,9 +17,9 @@
  *	You should have received a copy of the GNU General Public License
  *	along with SynthEffect.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
-#include <project/h/wave.h>
+#include <dv-config.h>
+#include <davroska.h>
+#include <wave.h>
 
 #define TOTAL_SAMPLES	89138
 

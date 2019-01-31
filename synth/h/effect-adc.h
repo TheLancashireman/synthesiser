@@ -20,10 +20,10 @@
 #ifndef EFFECT_ADC_H
 #define EFFECT_ADC_H	1
 
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
+#include <dv-config.h>
+#include <davroska.h>
 
-#include <project/h/effect.h>
+#include <effect.h>
 
 struct effect_adc_s
 {

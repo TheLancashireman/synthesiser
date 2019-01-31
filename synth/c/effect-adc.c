@@ -17,13 +17,13 @@
  *	You should have received a copy of the GNU General Public License
  *	along with SynthEffect.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
+#include <dv-config.h>
+#include <davroska.h>
 
-#include <project/h/effect.h>
-#include <project/h/effect-adc.h>
+#include <effect.h>
+#include <effect-adc.h>
 
-#include <devices/h/dv-arm-bcm2835-pcm.h>
+#include <dv-arm-bcm2835-pcm.h>
 
 struct effect_adc_s effect_adc;
 

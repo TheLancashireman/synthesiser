@@ -15,6 +15,8 @@
 #include <dv-arm-bcm2835-systimer.h>
 #include <dv-arm-bcm2835-armtimer.h>
 
+#include <synth-config.h>
+
 extern dv_u64_t dv_c1_stack_top, dv_c2_stack_top, dv_c3_stack_top;
 
 const dv_u64_t dv_c1_initialsp = (dv_address_t)&dv_c1_stack_top - DV_CANARY;
@@ -137,9 +139,7 @@ void dv_core1_start(void)
 	dv_init_core();
 	dv_armv8_mmu_setup(0);
 
-	for (;;)
-	{
-	}
+	run_core1();
 }
 
 /* dv_core2_start() - core 2 starts here
@@ -159,9 +159,7 @@ void dv_core2_start(void)
 	dv_init_core();
 	dv_armv8_mmu_setup(0);
 
-	for (;;)
-	{
-	}
+	run_core2();
 }
 
 /* dv_core3_start() - core 3 starts here
@@ -181,9 +179,7 @@ void dv_core3_start(void)
 	dv_init_core();
 	dv_armv8_mmu_setup(0);
 
-	for (;;)
-	{
-	}
+	run_core3();
 }
 
 

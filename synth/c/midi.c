@@ -17,10 +17,11 @@
  *	You should have received a copy of the GNU General Public License
  *	along with SynthEffect.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-stdio.h>
+#include <dv-config.h>
+#include <davroska.h>
+#include <dv-stdio.h>
 
-#include <project/h/midi.h>
+#include <midi.h>
 
 static unsigned midi_command[3];		/* Buffer for receiving MIDI commands */
 static int midi_idx = 0;

@@ -19,10 +19,10 @@
 */
 #ifndef EFFECT_DAC_H
 #define EFFECT_DAC_H	1
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
 
-#include <project/h/effect.h>
+#include <dv-config.h>
+#include <davroska.h>
+#include <effect.h>
 
 struct effect_dac_s
 {

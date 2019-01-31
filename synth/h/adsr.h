@@ -20,9 +20,9 @@
 #ifndef ADSR_H
 #define ADSR_H
 
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
-#include <project/h/synth-config.h>
+#include <dv-config.h>
+#include <davroska.h>
+#include <synth-config.h>
 
 /* adsr_s - structure that contains the envelope generator's parameters.
  *

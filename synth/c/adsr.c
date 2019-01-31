@@ -17,9 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with SynthEffect  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
-#include <project/h/adsr.h>
+#include <dv-config.h>
+#include <davroska.h>
+#include <adsr.h>
 
 /* adsr_init() - configures the specified adsr structure with its four parameters
 */

@@ -7,6 +7,7 @@
 #include <davroska.h>
 #include <dv-stdio.h>
 #include <dv-string.h>
+#include <synth-config.h>
 
 char *project_name = "SynthEffect";
 
@@ -15,6 +16,10 @@ char *project_name = "SynthEffect";
 int main(int argc, char **argv)
 {
 	dv_printf("%s starting...\n", project_name);
+
+	/* Initialise all the variables and hardware
+	*/
+	syntheffect_init();
 
 	dv_statustype_t e = dv_startos(0);
 

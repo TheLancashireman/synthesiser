@@ -17,28 +17,33 @@
  *	You should have received a copy of the GNU General Public License
  *	along with SynthEffect.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
-#include <kernel/h/dv-error.h>
-#include <kernel/h/dv-stdio.h>
-#include <kernel/h/dv-api.h>
-#include <kernel/h/dv-error.h>
+#define DV_ASM  0
+#include <davroska.h>
+#include <dv-stdio.h>
 
-#include DV_H_SYSTEMTIMER
-#include DV_H_CONSOLEUART
+#include <dv-arm-bcm2835-gpio.h>
+#include <dv-arm-bcm2835-pcm.h>
 
-#include <devices/h/dv-arm-bcm2835-gpio.h>
-#include <devices/h/dv-arm-bcm2835-pcm.h>
+#include <synth-config.h>
+#include <midi.h>
+#include <wave.h>
+#include <effect.h>
+#include <effect-adc.h>
+#include <effect-dac.h>
+#include <effect-synth.h>
 
-#include <project/h/synth-config.h>
-#include <project/h/midi.h>
-#include <project/h/wave.h>
-#include <project/h/effect.h>
-#include <project/h/effect-adc.h>
-#include <project/h/effect-dac.h>
-#include <project/h/effect-synth.h>
+/* Fixed stages
+ *
+ * Note: the index does not imply the order.
+*/
+#define EFFECT_STAGE_ADC	0
+#define EFFECT_STAGE_DAC	1
+#define EFFECT_STAGE_CTRL	2		/* For single-core */
+#define EFFECT_STAGE_SYNTH	3
 
+struct effect_s effect_stage[N_EFFECT_STAGES];
 
+#if 0
 /* effect_synthcontrol() - a dummy effect stage to handle MIDI input, console I/O etc.
 */
 struct synthcontrol_s
@@ -51,16 +56,15 @@ struct synthcontrol_s
 
 struct synthcontrol_s synthcontrol;
 
-struct effect_s effect_stage[N_EFFECT_STAGES];
-
-/* Fixed stages
- *
- * Note: the index does not imply the order.
-*/
-#define EFFECT_STAGE_ADC	0
-#define EFFECT_STAGE_DAC	1
-#define EFFECT_STAGE_CTRL	2		/* For single-core */
-#define EFFECT_STAGE_SYNTH	3
+/* Init function ... */
+	synthcontrol.dot_time = 0;
+	synthcontrol.dot_line_count = 0;
+	synthcontrol.current_note = 256;
+	synthcontrol.passthru = 0;
+	effect_stage[EFFECT_STAGE_CTRL].func = &effect_synthcontrol;
+	effect_stage[EFFECT_STAGE_CTRL].control = &synthcontrol;
+	effect_stage[EFFECT_STAGE_CTRL].name = "synthcontrol";
+/* End of init function */
 
 dv_i64_t effect_synthcontrol(struct effect_s *e, dv_i64_t signal)
 {
@@ -93,82 +97,79 @@ dv_i64_t effect_synthcontrol(struct effect_s *e, dv_i64_t signal)
 		*/
 		if ( cmd[0] == 0x90 )		/* Note on */
 		{
-			dv_kprintf("start(%d)\n", cmd[1]);
+			dv_printf("start(%d)\n", cmd[1]);
 			synth_start_note(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1]);
 		}
 		else if ( cmd[0] == 0x80 )	/* Note off */
 		{
-			dv_kprintf("stop(%d)\n", cmd[1]);
+			dv_printf("stop(%d)\n", cmd[1]);
 			synth_stop_note(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1]);
 		}
 		else if ( cmd[0] == 0xb0 )	/* Controller change */
 		{
-			dv_kprintf("ctrl(%d, %d)\n", cmd[1], cmd[2]);
+			dv_printf("ctrl(%d, %d)\n", cmd[1], cmd[2]);
 			synth_control(&effect_stage[EFFECT_STAGE_SYNTH], cmd[1], cmd[2]);
 		}
 	}
 
 	return ctrl->passthru ? signal : 0;
 }
+#endif
 
-/* prj_main() - the function that runs at startup
+/* syntheffect_init() - the function that runs at startup
  *
- * This function runs in a thread, so it really shouldn't call dv_kprintf()
+ * Initialise all the synth data structures
 */
-void prj_main(void)
+void syntheffect_init(void)
 {
-	dv_kprintf("prj_main: started.\n");
+	dv_printf("syntheffect_init: started.\n");
 
 	/* Initialise the waveform tables
 	*/
-	dv_kprintf("prj_main: calling wave_init().\n");
+	dv_printf("syntheffect_init: calling wave_init().\n");
 	if ( wave_init() != 0 )
 	{
-		dv_panic(dv_panic_unimplemented, "wave_init", "Oops! wave buffer too small");
+		panic("wave_init", "Oops! wave buffer too small");
 	}
 
 	/* Generate a set of root waveforms
 	*/
-	dv_kprintf("prj_main: calling wave_generate(SAW).\n");
+	dv_printf("syntheffect_init: calling wave_generate(SAW).\n");
 	wave_generate(SAW);
 
 	/* Initialise an initial set of effect stages
 	*/
-	dv_kprintf("prj_main: calling effect_init().\n");
+	dv_printf("syntheffect_init: calling effect_init().\n");
 	effect_init();
 
-	dv_kprintf("prj_main: adding ADC effect\n");
+	dv_printf("syntheffect_init: adding ADC effect\n");
 	effect_adc_init(&effect_stage[EFFECT_STAGE_ADC]);
 	effect_append(&effect_stage[EFFECT_STAGE_ADC]);
 
-	dv_kprintf("prj_main: adding synth_control effect\n");
-	synthcontrol.dot_time = 0;
-	synthcontrol.dot_line_count = 0;
-	synthcontrol.current_note = 256;
-	synthcontrol.passthru = 0;
-	effect_stage[EFFECT_STAGE_CTRL].func = &effect_synthcontrol;
-	effect_stage[EFFECT_STAGE_CTRL].control = &synthcontrol;
-	effect_stage[EFFECT_STAGE_CTRL].name = "synthcontrol";
+#if 0
+	dv_printf("syntheffect_init: adding CTRL effect\n");
+	effect_ctrl_init(&effect_stage[EFFECT_STAGE_CTRL]);
 	effect_append(&effect_stage[EFFECT_STAGE_CTRL]);
+#endif
 
-	dv_kprintf("prj_main: adding synth effect\n");
+	dv_printf("syntheffect_init: adding synth effect\n");
 	effect_synth_init(&effect_stage[EFFECT_STAGE_SYNTH]);
 	effect_append(&effect_stage[EFFECT_STAGE_SYNTH]);
 
-	dv_kprintf("prj_main: adding DAC effect\n");
+	dv_printf("syntheffect_init: adding DAC effect\n");
 	effect_dac_init(&effect_stage[EFFECT_STAGE_DAC]);		/* DAC output stage */
 	effect_append(&effect_stage[EFFECT_STAGE_DAC]);
 
 	{
 		struct effect_s *e = effect_list.next;
 
-		dv_kprintf("List of effect processors:\n");
+		dv_printf("List of effect processors:\n");
 		while ( e != DV_NULL )
 		{
 			if ( e->name == DV_NULL )
-				dv_kprintf("***Unknown***\n");
+				dv_printf("***Unknown***\n");
 			else
-				dv_kprintf("%s\n", e->name);
+				dv_printf("%s\n", e->name);
 
 			e = e->next;
 		}
@@ -176,85 +177,43 @@ void prj_main(void)
 
 	/* Initialise the PCM hardware for I2S
 	*/
-	dv_kprintf("prj_main: calling dv_pcm_init_i2s()\n");
+	dv_printf("syntheffect_init: calling dv_pcm_init_i2s()\n");
 	dv_pcm_init_i2s();
+}
 
+void run_core1(void)
+{
 	/* Do the stuff!
 	*/
-	dv_kprintf("prj_main: calling effect_processor()\n");
+	dv_printf("run_core1: calling effect_processor()\n");
 	effect_processor();		/* Never returns */
 }
 
-
-/* Handlers for all unimplemented exceptions.
- *
- * ToDo: remove these when davros provides handlers.
-*/
-void dv_catch_thread_fiq(dv_kernel_t *kvars)
+void run_core2(void)
 {
-	dv_panic(dv_panic_unimplemented, "dv_catch_thread_fiq", "Oops! An exception occurred");
+	/* Nothing to do yet
+	*/
+	dv_printf("run_core2: sleeping\n");
+	for (;;)
+	{
+		__asm ("wfe");
+	}
 }
 
-void dv_catch_thread_syserror(dv_kernel_t *kvars)
+void run_core3(void)
 {
-	dv_panic(dv_panic_unimplemented, "dv_catch_thread_syserror", "Oops! An exception occurred");
+	/* Nothing to do yet
+	*/
+	dv_printf("run_core3: sleeping\n");
+	for (;;)
+	{
+		__asm ("wfe");
+	}
 }
 
-void dv_catch_kernel_synchronous_exception(dv_kernel_t *kvars)
+void panic(char *func, char *msg)
 {
-	dv_panic(dv_panic_unimplemented, "dv_catch_kernel_synchronous_exception", "Oops! An exception occurred");
-}
-
-void dv_catch_kernel_irq(dv_kernel_t *kvars)
-{
-	dv_panic(dv_panic_unimplemented, "dv_catch_kernel_irq", "Oops! An exception occurred");
-}
-
-void dv_catch_kernel_fiq(dv_kernel_t *kvars)
-{
-	dv_panic(dv_panic_unimplemented, "dv_catch_kernel_fiq", "Oops! An exception occurred");
-}
-
-void dv_catch_kernel_syserror(dv_kernel_t *kvars)
-{
-	dv_panic(dv_panic_unimplemented, "dv_catch_kernel_syserror", "Oops! An exception occurred");
-}
-
-void dv_catch_aarch32_synchronous_exception(dv_kernel_t *kvars)
-{
-	dv_panic(dv_panic_unimplemented, "dv_catch_aarch32_synchronous_exception", "Oops! An exception occurred");
-}
-
-void dv_catch_aarch32_irq(dv_kernel_t *kvars)
-{
-	dv_panic(dv_panic_unimplemented, "dv_catch_aarch32_irq", "Oops! An exception occurred");
-}
-
-void dv_catch_aarch32_fiq(dv_kernel_t *kvars)
-{
-	dv_panic(dv_panic_unimplemented, "dv_catch_aarch32_fiq", "Oops! An exception occurred");
-}
-
-void dv_catch_aarch32_syserror(dv_kernel_t *kvars)
-{
-	dv_panic(dv_panic_unimplemented, "dv_catch_aarch32_syserror", "Oops! An exception occurred");
-}
-
-/* dv_panic() - printf error message, stay in endless loop
- *
- * ToDo: remove this when davros provides the function.
-*/
-void dv_panic(dv_panic_t reason, char *function, char *message)
-{
-	dv_kprintf("Davros panic %d in %s: %s\n", reason, function, message);
+	dv_disable();
+	dv_printf("Panic in %s : %s\n\n", func, msg);
 	for (;;) {}
 }
-
-/* prj_exc_handler() - handle traps to EL2/EL3
-*/
-void prj_exc_handler(dv_u64_t x0, dv_u64_t x1, dv_u64_t x2, dv_u64_t x3)
-{
-    dv_kprintf("prj_exc_handler() invoked\n");
-	for (;;) {}
-}
-

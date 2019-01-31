@@ -17,14 +17,14 @@
  *	You should have received a copy of the GNU General Public License
  *	along with SynthEffect.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
-#include <project/h/synth-config.h>
+#include <dv-config.h>
+#include <davroska.h>
+#include <synth-config.h>
 
-#include <project/h/effect.h>
-#include <project/h/effect-synth.h>
-#include <project/h/adsr.h>
-#include <project/h/wave.h>
+#include <effect.h>
+#include <effect-synth.h>
+#include <adsr.h>
+#include <wave.h>
 
 struct adsr_s note_adsr;
 struct effect_synth_s synth;

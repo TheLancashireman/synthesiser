@@ -20,13 +20,13 @@
 #ifndef EFFECT_SYNTH_H
 #define EFFECT_SYNTH_H	1
 
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
-#include <project/h/synth-config.h>
+#include <dv-config.h>
+#include <davroska.h>
+#include <synth-config.h>
 
-#include <project/h/effect.h>
-#include <project/h/adsr.h>
-#include <project/h/wave.h>
+#include <effect.h>
+#include <adsr.h>
+#include <wave.h>
 
 struct effect_synth_mono_s
 {

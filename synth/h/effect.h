@@ -20,8 +20,8 @@
 #ifndef EFFECT_H
 #define EFFECT_H	1
 
-#include <kernel/h/dv-kconfig.h>
-#include <kernel/h/dv-types.h>
+#include <dv-config.h>
+#include <davroska.h>
 
 /* The effects generator consists of a sequence of 2 or more single digital
  * transformations of an input signal.

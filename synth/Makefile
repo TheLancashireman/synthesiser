@@ -54,17 +54,14 @@ LD_OPT		+=	-lc
 # project files
 DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-hardware.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-main.o
-
-#DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-c0.o
-#DV_LD_OBJS	+=	$(DV_OBJ_D)/prj-vectors.o
-#DV_LD_OBJS	+=	$(DV_OBJ_D)/synth-effect-main.o
-#DV_LD_OBJS	+=	$(DV_OBJ_D)/effect.o
-#DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-adc.o
-#DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-dac.o
-#DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-synth.o
-#DV_LD_OBJS	+=	$(DV_OBJ_D)/midi.o
-#DV_LD_OBJS	+=	$(DV_OBJ_D)/wave.o
-#DV_LD_OBJS	+=	$(DV_OBJ_D)/adsr.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/synth-effect-main.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/effect.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-adc.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-dac.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-synth.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/midi.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/wave.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/adsr.o
 
 # davroska and associated library files
 DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska.o
@@ -78,6 +75,7 @@ DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-arm64.o
 
 DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm-bcm2835-uart.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm-bcm2835-gpio.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm-bcm2835-pcm.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm-bcm2835-interruptcontroller.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-arm-bcm2836-interruptcontroller.o
 
