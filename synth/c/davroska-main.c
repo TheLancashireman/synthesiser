@@ -8,6 +8,11 @@
 #include <dv-stdio.h>
 #include <dv-string.h>
 #include <synth-config.h>
+#include <synth-davroska.h>
+
+/* Object ids declared in synth-davroska.h
+*/
+dv_id_t Background;
 
 char *project_name = "SynthEffect";
 
@@ -74,12 +79,14 @@ void callout_idle(void)
 */
 void callout_autostart(dv_id_t unused_mode)
 {
+	dv_activatetask(Background);
 }
 
 /* callout_addtasks() - davroska object creation
 */
 void callout_addtasks(dv_id_t unused_mode)
 {
+	Background = dv_addtask("Background", Background_main, 1, 1);
 }
 
 /* callout_addisrs() - davroska object creation

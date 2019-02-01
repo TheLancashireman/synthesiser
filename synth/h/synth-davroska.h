@@ -1,6 +1,6 @@
-/*	midi.h - MIDI input/control for SynthEffect project
+/*	synth-davroska.h - declarations of davroska objects
  *
- *	Copyright 2018 David Haworth
+ *	Copyright 2019 David Haworth
  *
  *	This file is part of SynthEffect.
  *
@@ -17,9 +17,16 @@
  *	You should have received a copy of the GNU General Public License
  *	along with SynthEffect.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef MIDI_H
-#define MIDI_H
+#ifndef SYNTH_DAVROSKA_H
+#define SYNTH_DAVROSKA_H	1
 
-extern void midi_scan(void);
+#include <davroska.h>
+
+/* Tasks
+*/
+extern dv_id_t Background;
+
+extern void Background_main(void);
+
 
 #endif
