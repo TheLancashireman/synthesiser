@@ -23,7 +23,7 @@
 #include <synth-davroska.h>
 
 #include <midi.h>
-#include <effect-notecontrol.h>
+#include <notequeue.h>
 
 static dv_u32_t midi_command[3];		/* Buffer for receiving MIDI commands */
 static int midi_idx = 0;
@@ -84,17 +84,17 @@ static void dispatch_midi_command(dv_u32_t *cmd)
 	{
 		dv_printf("start(%d, %d)\n", ch, cmd[1]);
 		dv_u32_t note = NOTE_START | ( cmd[2] << 8 ) | cmd[1];
-		synth_send_note(ch, note);
+		send_note(ch, note);
 	}
 	else if ( c == 0x8 )	/* Note stop */
 	{
 		dv_printf("stop(%d, %d)\n", ch, cmd[1]);
 		dv_u32_t note = NOTE_STOP |  cmd[1];		/* Velocity is ignored */
-		synth_send_note(ch, note);
+		send_note(ch, note);
 	}
 	else if ( c == 0xb )	/* Controller change */
 	{
 		dv_printf("controller(%d, %d, %d)\n", ch, cmd[1], cmd[2]);
-		synth_controller_change(ch, cmd[1], cmd[2]);
+		controller_change(ch, cmd[1], cmd[2]);
 	}
 }

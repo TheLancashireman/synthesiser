@@ -60,6 +60,7 @@ DV_LD_OBJS	+=	$(DV_OBJ_D)/effect.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-adc.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-dac.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-synth.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/notequeue.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/midi.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/wave.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/adsr.o

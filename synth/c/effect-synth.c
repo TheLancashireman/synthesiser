@@ -23,12 +23,17 @@
 
 #include <effect.h>
 #include <effect-synth.h>
+#include <notequeue.h>
 #include <adsr.h>
 #include <wave.h>
 
 struct adsr_s note_adsr;
 struct effect_synth_s synth;
 struct effect_synth_mono_s notegen[MAX_POLYPHONIC];
+
+static void synth_start_note(dv_i32_t midi_note);
+static void synth_stop_note(dv_i32_t midi_note);
+static struct effect_synth_mono_s *synth_find_generator(dv_i32_t midi_note);
 
 /* effect_synth() - sequence of note generators.
  *
@@ -42,6 +47,27 @@ dv_i64_t effect_synth(struct effect_s *e, dv_i64_t signal)
 	struct effect_synth_s *synth = (struct effect_synth_s *)e->control;
 	dv_i64_t my_signal = 0;
 
+	struct notequeue_s *nq = &notechannels.nq[NQ_SYNTH];
+	dv_rbm_t *rbm = &nq->rbm;
+
+	/* First check for new note-on/note-off messages
+	*/
+	while ( !dv_rb_isempty(rbm) )
+	{
+		dv_i32_t head = rbm->head;
+		dv_u32_t note = nq->buffer[head];
+		head = dv_rb_add1(rbm, head);
+		__asm volatile("dsb sy");
+		rbm->head = head;
+
+		if ( (note & NOTE_START) == 0 )
+			synth_stop_note(note & 0x7f);
+		else
+			synth_start_note(note & 0x7f);	/* Velocity ignored */
+	}
+
+	/* Now generate all the active notes
+	*/
 	for ( int i = 0; i < synth->n_polyphonic; i++ )
 	{
 		my_signal += synth_play_note(&notegen[i]);
@@ -111,10 +137,9 @@ dv_i64_t synth_play_note(struct effect_synth_mono_s *notegen)
 
 /* synth_start_note() - start playing a note
 */
-void synth_start_note(struct effect_s *e, dv_i32_t midi_note)
+void synth_start_note(dv_i32_t midi_note)
 {
-	struct effect_synth_s *synth = (struct effect_synth_s *)e->control;
-	struct effect_synth_mono_s *ng = synth_find_generator(synth, midi_note);
+	struct effect_synth_mono_s *ng = synth_find_generator(midi_note);
 
 	ng->age = 0;
 	ng->midi_note = midi_note;
@@ -131,11 +156,9 @@ void synth_start_note(struct effect_s *e, dv_i32_t midi_note)
  * The note (if it's there) is set into its release phase.
  * The note doesn't actually stop playing until the end of its release phase.
 */
-void synth_stop_note(struct effect_s *e, dv_i32_t midi_note)
+void synth_stop_note(dv_i32_t midi_note)
 {
-	struct effect_synth_s *synth = (struct effect_synth_s *)e->control;
-
-	for ( int i = 0; i < synth->n_polyphonic; i++ )
+	for ( int i = 0; i < synth.n_polyphonic; i++ )
 	{
 		if ( notegen[i].midi_note == midi_note )
 		{
@@ -153,11 +176,11 @@ void synth_stop_note(struct effect_s *e, dv_i32_t midi_note)
  *		2. Playing same note
  *		3. Playing longest
 */
-struct effect_synth_mono_s *synth_find_generator(struct effect_synth_s *s, dv_i32_t midi_note)
+struct effect_synth_mono_s *synth_find_generator(dv_i32_t midi_note)
 {
 	struct effect_synth_mono_s *ng = &notegen[0];
 
-	for ( int i = 0; i < s->n_polyphonic; i++ )
+	for ( int i = 0; i < synth.n_polyphonic; i++ )
 	{
 		if ( notegen[i].envelope.position < 0 )
 			return &notegen[i];						/* Return a free generator */

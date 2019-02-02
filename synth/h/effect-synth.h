@@ -47,9 +47,6 @@ extern struct effect_synth_s synth;
 extern dv_i64_t effect_synth(struct effect_s *e, dv_i64_t signal);
 extern void effect_synth_init(struct effect_s *e);
 extern dv_i64_t synth_play_note(struct effect_synth_mono_s *notegen);
-extern void synth_start_note(struct effect_s *e, dv_i32_t midi_note);
-extern void synth_stop_note(struct effect_s *e, dv_i32_t midi_note);
-extern struct effect_synth_mono_s *synth_find_generator(struct effect_synth_s *s, dv_i32_t midi_note);
 extern void synth_control(struct effect_s *e, dv_i32_t controller, dv_i32_t value);
 
 #endif
