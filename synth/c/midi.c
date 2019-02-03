@@ -19,16 +19,18 @@
 */
 #include <dv-config.h>
 #include <davroska.h>
-#include <dv-stdio.h>
+#include <synth-stdio.h>
 #include <synth-davroska.h>
 
 #include <midi.h>
 #include <notequeue.h>
+#include <effect-synth.h> 				/* Needed because we use the synth_control() function explicitly */
 
 static dv_u32_t midi_command[3];		/* Buffer for receiving MIDI commands */
 static int midi_idx = 0;
 
 static void dispatch_midi_command(dv_u32_t *cmd);
+static void controller_change(dv_u32_t ch, dv_u32_t id, dv_u32_t val);
 
 /* midi_scan() - watch for midi commands in console input stream
  *
@@ -82,19 +84,32 @@ static void dispatch_midi_command(dv_u32_t *cmd)
 
 	if ( c == 0x9 )			/* Note start */
 	{
-		dv_printf("start(%d, %d)\n", ch, cmd[1]);
+		sy_printf("start(%d, %d)\n", ch, cmd[1]);
 		dv_u32_t note = NOTE_START | ( cmd[2] << 8 ) | cmd[1];
 		send_note(ch, note);
 	}
 	else if ( c == 0x8 )	/* Note stop */
 	{
-		dv_printf("stop(%d, %d)\n", ch, cmd[1]);
+		sy_printf("stop(%d, %d)\n", ch, cmd[1]);
 		dv_u32_t note = NOTE_STOP |  cmd[1];		/* Velocity is ignored */
 		send_note(ch, note);
 	}
 	else if ( c == 0xb )	/* Controller change */
 	{
-		dv_printf("controller(%d, %d, %d)\n", ch, cmd[1], cmd[2]);
+		sy_printf("controller(%d, %d, %d)\n", ch, cmd[1], cmd[2]);
 		controller_change(ch, cmd[1], cmd[2]);
+	}
+}
+
+/* controller_change() - forward a controller change message to the appropriate synth
+ *
+ * Only handles messages for the channels corresponding to note queues.
+ * To do - generalise the note queue to be a control interface too.
+*/
+static void controller_change(dv_u32_t ch, dv_u32_t id, dv_u32_t val)
+{
+	if ( ch == notechannels.nq[NQ_SYNTH].channel )
+	{
+		synth_control((dv_i32_t)id, (dv_i32_t)val);
 	}
 }

@@ -52,12 +52,12 @@ dv_i64_t effect_synth(struct effect_s *e, dv_i64_t signal)
 
 	/* First check for new note-on/note-off messages
 	*/
-	while ( !dv_rb_isempty(rbm) )
+	while ( !dv_rb_empty(rbm) )
 	{
 		dv_i32_t head = rbm->head;
 		dv_u32_t note = nq->buffer[head];
 		head = dv_rb_add1(rbm, head);
-		__asm volatile("dsb sy");
+		dv_barrier();
 		rbm->head = head;
 
 		if ( (note & NOTE_START) == 0 )
@@ -202,10 +202,8 @@ struct effect_synth_mono_s *synth_find_generator(dv_i32_t midi_note)
  * controllers 0 to 127 are midi controller values - see synth-config.h
  * controller 128 - number of polyphonic notes
 */
-void synth_control(struct effect_s *e, dv_i32_t controller, dv_i32_t value)
+void synth_control(dv_i32_t controller, dv_i32_t value)
 {
-	struct effect_synth_s *synth = (struct effect_synth_s *)e->control;
-
 	switch ( controller )
 	{
 	case SYNTH_CTRL_ENVELOPE_A:
@@ -226,7 +224,7 @@ void synth_control(struct effect_s *e, dv_i32_t controller, dv_i32_t value)
 
 	case SYNTH_CTRL_N_POLY:
 		if ( value > 0 && value <= MAX_POLYPHONIC )
-			synth->n_polyphonic = value;
+			synth.n_polyphonic = value;
 		break;
 
 	default:

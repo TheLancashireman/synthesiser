@@ -28,6 +28,7 @@
 struct effect_adc_s
 {
 	dv_i32_t select;	/* non-zero ==> right, zero ==> left */
+	dv_i32_t pace;
 };
 
 extern struct effect_adc_s effect_adc;

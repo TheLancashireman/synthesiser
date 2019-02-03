@@ -19,8 +19,9 @@
 */
 #include <dv-config.h>
 #include <davroska.h>
-#include <dv-stdio.h>
+#include <synth-stdio.h>
 #include <synth-davroska.h>
+#include <effect.h>
 
 #include <midi.h>
 
@@ -38,11 +39,22 @@
 */
 void Background_main(void)
 {
+	sy_printf("Background task running\n");
+
+	effect_sync = 1;
+	dv_barrier();
+
 	for (;;)
 	{
+#if 1
 		/* Scan the incoming characters and split into MIDI and plain 7-bit ASCII streams.
 		*/
 		midi_scan();
+#endif
+
+		/* Handle the serial output
+		*/
+		charbuf_scan();
 
 		/* Anything else?
 		*/

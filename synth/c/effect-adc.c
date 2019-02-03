@@ -19,6 +19,8 @@
 */
 #include <dv-config.h>
 #include <davroska.h>
+#include <synth-config.h>
+#include <synth-stdio.h>
 
 #include <effect.h>
 #include <effect-adc.h>
@@ -35,6 +37,7 @@ void effect_adc_init(struct effect_s *e)
 	e->control = &effect_adc;
 	e->name = "adc";
 	effect_adc.select = 1;
+	effect_adc.pace = 0;
 }
 
 /* effect_adc_input() - read input from ADC
@@ -52,6 +55,17 @@ dv_i64_t effect_adc_input(struct effect_s *e, dv_i64_t unused_signal)
 {
 	struct effect_adc_s *adc = (struct effect_adc_s *)e->control;
 	dv_i32_t left, right;
+
+	adc->pace++;
+	if ( (adc->pace % SAMPLES_PER_SEC) == 0 )
+	{
+		charbuf_putc(dv_get_coreidx(), '.');
+	}
+	if ( adc->pace >= (SAMPLES_PER_SEC * 60) )
+	{
+		charbuf_putc(dv_get_coreidx(), '\n');
+		adc->pace = 0;
+	}
 
 	dv_pcm_read(&left);
 	dv_pcm_read(&right);

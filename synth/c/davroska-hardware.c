@@ -5,7 +5,7 @@
 #define DV_ASM	0
 #include <dv-config.h>
 #include <davroska.h>
-#include <dv-stdio.h>
+#include <synth-stdio.h>
 #include <dv-string.h>
 
 #include <dv-arm-bcm2835-uart.h>
@@ -43,8 +43,8 @@ void dv_board_start(void)
 	dv_arm_bcm2835_uart_init(115200, 8, 0);
 	dv_arm_bcm2835_uart_console();
 
-	dv_printf("pi-3-arm64 starting ...\n");
-	dv_printf("stack pointer = 0x%016lx\n", dv_get_SP());
+	sy_printf("pi-3-arm64 starting ...\n");
+	sy_printf("stack pointer = 0x%016lx\n", dv_get_SP());
 
 	dv_init_core();
 
@@ -100,21 +100,21 @@ static void dv_init_core(void)
 
 	if ( el == 3 )
 	{
-		dv_printf("Current EL = %d\n", el);
-		dv_printf("Dropping to EL2\n");
+		sy_printf("Current EL = %d\n", el);
+		sy_printf("Dropping to EL2\n");
 		dv_switch_el3el2();
 		el = dv_get_el();
 	}
 
 	if ( el == 2 )
 	{
-		dv_printf("Current EL = %d\n", el);
-		dv_printf("Dropping to EL1\n");
+		sy_printf("Current EL = %d\n", el);
+		sy_printf("Dropping to EL1\n");
 		dv_switch_el2el1();
 		el = dv_get_el();
 	}
 
-	dv_printf("Current EL = %d\n", el);
+	sy_printf("Current EL = %d\n", el);
 
 	if ( el != 1 )
 	{
@@ -134,7 +134,8 @@ void dv_core1_start(void)
 	/* Initialise uart and connect it to the stdio functions
 	*/
     dv_arm_bcm2835_uart_console();
-	dv_printf("pi-3-arm64 starting core 1 ...\n");
+	sy_printf("pi-3-arm64 starting core 1 ...\n");
+	sy_printf("           dv_get_coreidx() reports %d\n", dv_get_coreidx());
 
 	dv_init_core();
 	dv_armv8_mmu_setup(0);
@@ -154,7 +155,8 @@ void dv_core2_start(void)
 	/* Initialise uart and connect it to the stdio functions
 	*/
     dv_arm_bcm2835_uart_console();
-	dv_printf("pi-3-arm64 starting core 2 ...\n");
+	sy_printf("pi-3-arm64 starting core 2 ...\n");
+	sy_printf("           dv_get_coreidx() reports %d\n", dv_get_coreidx());
 
 	dv_init_core();
 	dv_armv8_mmu_setup(0);
@@ -174,7 +176,8 @@ void dv_core3_start(void)
 	/* Initialise uart and connect it to the stdio functions
 	*/
     dv_arm_bcm2835_uart_console();
-	dv_printf("pi-3-arm64 starting core 3 ...\n");
+	sy_printf("pi-3-arm64 starting core 3 ...\n");
+	sy_printf("           dv_get_coreidx() reports %d\n", dv_get_coreidx());
 
 	dv_init_core();
 	dv_armv8_mmu_setup(0);

@@ -5,7 +5,7 @@
 #define DV_ASM	0
 #include <dv-config.h>
 #include <davroska.h>
-#include <dv-stdio.h>
+#include <synth-stdio.h>
 #include <dv-string.h>
 #include <synth-config.h>
 #include <synth-davroska.h>
@@ -20,7 +20,7 @@ char *project_name = "SynthEffect";
 */
 int main(int argc, char **argv)
 {
-	dv_printf("%s starting...\n", project_name);
+	sy_printf("%s starting...\n", project_name);
 
 	/* Initialise all the variables and hardware
 	*/
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 
 	dv_statustype_t e = dv_startos(0);
 
-	dv_printf("dv_startos() returned %d  :-(\n", e);
+	sy_printf("dv_startos() returned %d  :-(\n", e);
 
 	dv_panic(dv_panic_UnknownRequest, dv_sid_startup, "Oops! dv_startos() returned!");
 }
@@ -37,15 +37,15 @@ int main(int argc, char **argv)
 */
 dv_statustype_t callout_reporterror(dv_sid_t sid, dv_statustype_t e, dv_qty_t nParam, dv_param_t *p)
 {
-	dv_printf("Error %d in API %d.", e, sid);
+	sy_printf("Error %d in API %d.", e, sid);
 	if ( nParam > 0 )
 	{
-		dv_printf(" Parameters:");
+		sy_printf(" Parameters:");
 		for ( int i = 0; i < nParam; i++ )
 		{
-			dv_printf(" 0x%lx", p[i]);
+			sy_printf(" 0x%lx", p[i]);
 		}
-		dv_printf("\n");
+		sy_printf("\n");
 	}
 
 	return e;
@@ -55,14 +55,14 @@ dv_statustype_t callout_reporterror(dv_sid_t sid, dv_statustype_t e, dv_qty_t nP
 */
 void callout_shutdown(dv_statustype_t e)
 {
-	dv_printf("%s shutting down - status %d\n", e);
+	sy_printf("%s shutting down - status %d\n", e);
 }
 
 /* callout_panic() - report a panic
 */
 void callout_panic(dv_panic_t p, dv_sid_t sid, char *fault)
 {
-	dv_printf("Panic %d (API %d): %s\n", p, sid, fault);
+	sy_printf("Panic %d (API %d): %s\n", p, sid, fault);
 }
 
 /* callout_idle() - the idle loop
@@ -71,7 +71,7 @@ void callout_panic(dv_panic_t p, dv_sid_t sid, char *fault)
 */
 void callout_idle(void)
 {
-	dv_printf("callout_idle() reached\n");
+	sy_printf("callout_idle() reached\n");
 	for (;;) {}
 }
 

@@ -75,8 +75,9 @@ static inline void send_note(dv_u32_t ch, dv_u32_t note)
 				dv_i32_t tail = rbm->tail;
 				nq->buffer[tail] = note;
 				tail = dv_rb_add1(rbm, tail);
-				__asm volatile("dsb sy");
+				dv_barrier();
 				rbm->tail = tail;
+				dv_barrier();
 			}
 			break;
 		}

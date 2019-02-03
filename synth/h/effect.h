@@ -53,6 +53,7 @@ struct effect_s
 };
 
 extern struct effect_s effect_list;
+extern volatile dv_boolean_t effect_sync;
 
 extern void effect_init(void);
 extern dv_i64_t effect_chain(struct effect_s *e, dv_i64_t signal);

@@ -55,6 +55,7 @@ LD_OPT		+=	-lc
 DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-hardware.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-main.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/synth-effect-main.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/synth-stdio.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/background.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/effect.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-adc.o
