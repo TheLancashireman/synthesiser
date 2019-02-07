@@ -41,9 +41,12 @@ static void controller_change(dv_u32_t ch, dv_u32_t id, dv_u32_t val);
 */
 void midi_scan(void)
 {
-	if ( dv_consoledriver.isrx() )
+	while ( dv_consoledriver.isrx() )
 	{
 		unsigned c = (unsigned)dv_consoledriver.getc();
+#if 0
+		sy_printf("char 0x%x\n", c);
+#endif
 
 		if ( (c & 0x80) != 0 )
 		{
@@ -65,6 +68,14 @@ void midi_scan(void)
 			 * Echo them, place them in a ring buffer and notify a command interpreter when
 			 * an enter key is received (\r or \n).
 			*/
+			charbuf_putc(0, c);
+			charbuf_putc(4, c);
+#if 0
+			if ( c == '\r' || c == '\n' )
+			{
+				dv_activatetask(cmdterp);
+			}
+#endif
 		}
 	}
 }

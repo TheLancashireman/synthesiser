@@ -120,7 +120,7 @@ void charbuf_scan(void)
 			for ( int i = 0; i < 4; i++ )
 			{
 				scan_cb++;
-				if ( scan_cb > 3 )	scan_cb = 1;
+				if ( scan_cb > 3 )	scan_cb = 0;
 
 				int c = charbuf_getc(scan_cb);
 

@@ -27,6 +27,8 @@
 #include <adsr.h>
 #include <wave.h>
 
+#include <synth-stdio.h>
+
 struct adsr_s note_adsr;
 struct effect_synth_s synth;
 struct effect_synth_mono_s notegen[MAX_POLYPHONIC];
@@ -59,6 +61,8 @@ dv_i64_t effect_synth(struct effect_s *e, dv_i64_t signal)
 		head = dv_rb_add1(rbm, head);
 		dv_barrier();
 		rbm->head = head;
+
+		sy_printf("Note: %05x\n", note);
 
 		if ( (note & NOTE_START) == 0 )
 			synth_stop_note(note & 0x7f);

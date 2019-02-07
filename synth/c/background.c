@@ -41,8 +41,10 @@ void Background_main(void)
 {
 	sy_printf("Background task running\n");
 
+#if 1
 	effect_sync = 1;
 	dv_barrier();
+#endif
 
 	for (;;)
 	{
@@ -52,9 +54,11 @@ void Background_main(void)
 		midi_scan();
 #endif
 
+#if 1
 		/* Handle the serial output
 		*/
 		charbuf_scan();
+#endif
 
 		/* Anything else?
 		*/

@@ -26,8 +26,11 @@
 #include <effect-adc.h>
 
 #include <dv-arm-bcm2835-pcm.h>
+#include <dv-arm-bcm2835-systimer.h>
 
 struct effect_adc_s effect_adc;
+
+static dv_u64_t tmin;
 
 /* effect_adc_init() - initialise the ADC input stage
 */
@@ -38,6 +41,7 @@ void effect_adc_init(struct effect_s *e)
 	e->name = "adc";
 	effect_adc.select = 1;
 	effect_adc.pace = 0;
+	tmin = 0xffffffffffffffff;
 }
 
 /* effect_adc_input() - read input from ADC
@@ -55,20 +59,32 @@ dv_i64_t effect_adc_input(struct effect_s *e, dv_i64_t unused_signal)
 {
 	struct effect_adc_s *adc = (struct effect_adc_s *)e->control;
 	dv_i32_t left, right;
+	dv_u64_t tStart, tEnd;
 
+#if 1
 	adc->pace++;
 	if ( (adc->pace % SAMPLES_PER_SEC) == 0 )
 	{
 		charbuf_putc(dv_get_coreidx(), '.');
+		charbuf_putc(dv_get_coreidx(), '\0');		/* The NUL byte allows the scan loop to scan other chaannels */
 	}
 	if ( adc->pace >= (SAMPLES_PER_SEC * 60) )
 	{
 		charbuf_putc(dv_get_coreidx(), '\n');
 		adc->pace = 0;
 	}
+#endif
 
+	tStart = dv_readtime();
 	dv_pcm_read(&left);
 	dv_pcm_read(&right);
+	tEnd = dv_readtime();
+
+	if ( (tEnd - tStart) < tmin )
+	{
+		tmin = tEnd - tStart;
+		sy_printf("idle: %ld\n", tmin);
+	}
 
 	return (dv_i64_t)(adc->select ? right : left);
 }
