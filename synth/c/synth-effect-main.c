@@ -23,6 +23,7 @@
 
 #include <dv-arm-bcm2835-gpio.h>
 #include <dv-arm-bcm2835-pcm.h>
+#include <dv-arm-bcm2835-armtimer.h>
 
 #include <synth-config.h>
 #include <notequeue.h>
@@ -77,9 +78,11 @@ void syntheffect_init(void)
 	sy_printf("syntheffect_init: calling effect_init().\n");
 	effect_init();
 
+#if 0
 	sy_printf("syntheffect_init: adding ADC effect\n");
 	effect_adc_init(&effect_stage[EFFECT_STAGE_ADC]);
 	effect_append(&effect_stage[EFFECT_STAGE_ADC]);
+#endif
 
 	sy_printf("syntheffect_init: adding synth effect\n");
 	effect_synth_init(&effect_stage[EFFECT_STAGE_SYNTH]);
@@ -104,10 +107,14 @@ void syntheffect_init(void)
 		}
 	}
 
-	/* Initialise the PCM hardware for I2S
+	/* Initialise the ARM timer module
 	*/
-	sy_printf("syntheffect_init: calling dv_pcm_init_i2s()\n");
-	dv_pcm_init_i2s();
+	dv_arm_bcm2835_armtimer_init(1);				/* Highest resolution */
+	dv_arm_bcm2835_armtimer_set_load(250000);		/* Should give an interrupt every millisecond */
+	dv_arm_bcm2835_armtimer_set_frc_prescale(1);	/* Set the FRC prescaler for max. resolution */
+	dv_arm_bcm2835_armtimer_enable_frc();
+	sy_printf("syntheffect_init: initialised FRC; value is %u\n", dv_arm_bcm2835_armtimer_read_frc());
+
 }
 
 void run_core1(void)
@@ -117,6 +124,18 @@ void run_core1(void)
 	while ( !effect_sync )
 	{
 	}
+
+	/* Initialise the PCM hardware for I2S
+	*/
+	sy_printf("syntheffect_init: calling dv_pcm_init_i2s()\n");
+	dv_pcm_init_i2s();
+
+#if 0
+	/* Stuff the transmit fifos with 0
+	*/
+	for ( int i = 0; i < 63; i++ )
+		dv_pcm_write(0);
+#endif
 
 	/* Do the stuff!
 	*/

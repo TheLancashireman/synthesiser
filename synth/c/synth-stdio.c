@@ -90,6 +90,9 @@ int sy_printf(const char *fmt, ...)
 		case 3:
 			nprinted = dv_xprintf(&charbuf_putc_3, fmt, ap);
 			break;
+		default:
+			nprinted = 0;
+			break;
 		}
 	}
 	else

@@ -27,10 +27,11 @@
 
 #include <dv-arm-bcm2835-pcm.h>
 #include <dv-arm-bcm2835-systimer.h>
+#include <dv-arm-bcm2835-armtimer.h>
 
 struct effect_adc_s effect_adc;
 
-static dv_u64_t tmin;
+static dv_u32_t tmin;
 
 /* effect_adc_init() - initialise the ADC input stage
 */
@@ -41,7 +42,7 @@ void effect_adc_init(struct effect_s *e)
 	e->name = "adc";
 	effect_adc.select = 1;
 	effect_adc.pace = 0;
-	tmin = 0xffffffffffffffff;
+	tmin = 0xffffffff;
 }
 
 /* effect_adc_input() - read input from ADC
@@ -61,7 +62,7 @@ dv_i64_t effect_adc_input(struct effect_s *e, dv_i64_t unused_signal)
 	dv_i32_t left, right;
 	dv_u64_t tStart, tEnd;
 
-#if 1
+#if 0
 	adc->pace++;
 	if ( (adc->pace % SAMPLES_PER_SEC) == 0 )
 	{
@@ -75,15 +76,15 @@ dv_i64_t effect_adc_input(struct effect_s *e, dv_i64_t unused_signal)
 	}
 #endif
 
-	tStart = dv_readtime();
+	tStart = dv_arm_bcm2835_armtimer_read_frc();
 	dv_pcm_read(&left);
 	dv_pcm_read(&right);
-	tEnd = dv_readtime();
+	tEnd = dv_arm_bcm2835_armtimer_read_frc();
 
 	if ( (tEnd - tStart) < tmin )
 	{
 		tmin = tEnd - tStart;
-		sy_printf("idle: %ld\n", tmin);
+		sy_printf("idle: %u\n", tmin);
 	}
 
 	return (dv_i64_t)(adc->select ? right : left);

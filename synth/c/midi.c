@@ -95,13 +95,17 @@ static void dispatch_midi_command(dv_u32_t *cmd)
 
 	if ( c == 0x9 )			/* Note start */
 	{
+#if 0
 		sy_printf("start(%d, %d)\n", ch, cmd[1]);
+#endif
 		dv_u32_t note = NOTE_START | ( cmd[2] << 8 ) | cmd[1];
 		send_note(ch, note);
 	}
 	else if ( c == 0x8 )	/* Note stop */
 	{
+#if 0
 		sy_printf("stop(%d, %d)\n", ch, cmd[1]);
+#endif
 		dv_u32_t note = NOTE_STOP |  cmd[1];		/* Velocity is ignored */
 		send_note(ch, note);
 	}

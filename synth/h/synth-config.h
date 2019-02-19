@@ -36,6 +36,8 @@
 #define ADSR_DMAX			128		/* d = 128 -> 1 sec */
 #define ADSR_RMAX			128		/* r = 128 -> 1 sec */
 
+#define SYNTH_GAIN1			1000	/* Unity gain */
+
 /* Continuous controllers (MIDI command 0xb-)
 */
 #define SYNTH_CTRL_ENVELOPE_A	0	/* Note attack time */

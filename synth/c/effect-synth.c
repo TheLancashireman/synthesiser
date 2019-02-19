@@ -44,40 +44,44 @@ static struct effect_synth_mono_s *synth_find_generator(dv_i32_t midi_note);
  *
  * The number of simultaneous notes (up to MAX_POLYPHONIC) is controlled by the master program.
 */
-dv_i64_t effect_synth(struct effect_s *e, dv_i64_t signal)
+dv_i64_t effect_synth(struct effect_s *e, dv_i64_t unused_signal)
 {
-	struct effect_synth_s *synth = (struct effect_synth_s *)e->control;
+	struct effect_synth_s *sy = (struct effect_synth_s *)e->control;
 	dv_i64_t my_signal = 0;
 
 	struct notequeue_s *nq = &notechannels.nq[NQ_SYNTH];
 	dv_rbm_t *rbm = &nq->rbm;
 
-	/* First check for new note-on/note-off messages
+	/* First check for a new note-on/note-off message
 	*/
-	while ( !dv_rb_empty(rbm) )
+	if ( !dv_rb_empty(rbm) )
 	{
 		dv_i32_t head = rbm->head;
 		dv_u32_t note = nq->buffer[head];
 		head = dv_rb_add1(rbm, head);
-		dv_barrier();
-		rbm->head = head;
-
-		sy_printf("Note: %05x\n", note);
 
 		if ( (note & NOTE_START) == 0 )
 			synth_stop_note(note & 0x7f);
 		else
 			synth_start_note(note & 0x7f);	/* Velocity ignored */
+
+		dv_barrier();
+		rbm->head = head;
+
+#if 0
+		sy_printf("Note: %05x\n", note);
+#endif
+
 	}
 
 	/* Now generate all the active notes
 	*/
-	for ( int i = 0; i < synth->n_polyphonic; i++ )
+	for ( int i = 0; i < sy->n_polyphonic; i++ )
 	{
 		my_signal += synth_play_note(&notegen[i]);
 	}
 
-	return my_signal + signal;
+	return (my_signal * sy->gain)/SYNTH_GAIN1;
 }
 
 
@@ -89,18 +93,22 @@ void effect_synth_init(struct effect_s *e)
 	e->control = &synth;
 	e->name = "synth";
 
-	adsr_init(&note_adsr, 0, 0, ADSR_GMAX, 0, SAMPLES_PER_SEC);
+	synth.n_polyphonic = 5;
+	synth.gain = SYNTH_GAIN1/3;
+
+	adsr_init(&note_adsr, 3, 3, ADSR_GMAX-12, 3, SAMPLES_PER_SEC);
 
 	for ( int i = 0; i < MAX_POLYPHONIC; i++ )
 	{
 		notegen[i].vco.root = DV_NULL;
 		notegen[i].envelope.adsr = &note_adsr;
 		notegen[i].envelope.position = -1;
+		notegen[i].envelope.state = 'x';
 	}
 }
 
 
-/* synth_note() - generate the next sample of a single note
+/* synth_play_note() - generate the next sample of a single note
  *
  * This is where the work is really done.
  *
@@ -116,26 +124,31 @@ void effect_synth_init(struct effect_s *e)
  *	- another envelope generator to modulate the vcf (or to modulate the vcf's lfo)
  *	- etc etc.
 */
-dv_i64_t synth_play_note(struct effect_synth_mono_s *notegen)
+dv_i64_t synth_play_note(struct effect_synth_mono_s *ng)
 {
-	if ( notegen->envelope.position < 0 )
+	if ( ng->envelope.position < 0 )
 		return 0;
 
 	/* Do I care about overflow here? It happens after about 15 minutes.
 	*/
-	notegen->age++;
+	ng->age++;
 
 	/* Compute the ADSR gain.
 	*/
-	dv_i64_t gain = (dv_i64_t)envelope_gen(&notegen->envelope);
+	dv_i32_t gain = envelope_gen(&ng->envelope);
 
 	/* Compute current raw waveform value.
 	*/
-	dv_i64_t sample = (dv_i64_t)tone_play(&notegen->vco);
+	dv_i32_t sample = tone_play(&ng->vco);
+
+#if 0
+	if ( (ng->age %  SAMPLES_PER_SEC) == 0 )
+		sy_printf("gen: %d, %d, %d\n", ng-notegen, sample, gain);
+#endif
 
 	/* Signal is sample * gain.
 	*/
-	return (sample * gain) / 1000;
+	return ((dv_i64_t)sample * (dv_i64_t)gain) / ADSR_GMAX;
 }
 
 
@@ -145,6 +158,9 @@ void synth_start_note(dv_i32_t midi_note)
 {
 	struct effect_synth_mono_s *ng = synth_find_generator(midi_note);
 
+#if 0
+	sy_printf("Start note: %d\n", ng-notegen);
+#endif
 	ng->age = 0;
 	ng->midi_note = midi_note;
 
@@ -166,6 +182,9 @@ void synth_stop_note(dv_i32_t midi_note)
 	{
 		if ( notegen[i].midi_note == midi_note )
 		{
+#if 0
+			sy_printf("Stop note: %d\n", i);
+#endif
 			envelope_stop(&notegen[i].envelope);
 			return;
 		}
@@ -182,20 +201,22 @@ void synth_stop_note(dv_i32_t midi_note)
 */
 struct effect_synth_mono_s *synth_find_generator(dv_i32_t midi_note)
 {
-	struct effect_synth_mono_s *ng = &notegen[0];
+	struct effect_synth_mono_s *ngx = &notegen[0];
+	struct effect_synth_mono_s *ng = ngx;
 
 	for ( int i = 0; i < synth.n_polyphonic; i++ )
 	{
-		if ( notegen[i].envelope.position < 0 )
-			return &notegen[i];						/* Return a free generator */
+		if ( ngx->envelope.position < 0 )
+			return ngx;						/* Return a free generator */
 
-		if ( notegen[i].midi_note == midi_note )
-			return &notegen[i];						/* Return a generator that's playing the same note */
+		if ( ngx->midi_note == midi_note )
+			return ngx;						/* Return a generator that's playing the same note */
 
-		if ( notegen[i].age > ng->age ) 
+		if ( ngx->age > ng->age ) 
 		{
-			ng = &notegen[i];						/* Remember an older generator */
+			ng = ngx;						/* Remember an older generator */
 		}
+		ngx++;
 	}
 
 	return ng;

@@ -39,6 +39,7 @@ struct effect_synth_mono_s
 struct effect_synth_s
 {
 	int n_polyphonic;
+	int gain;
 };
 
 extern struct effect_synth_mono_s notegen[MAX_POLYPHONIC];

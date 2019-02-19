@@ -20,6 +20,7 @@
 #include <dv-config.h>
 #include <davroska.h>
 #include <wave.h>
+#include <synth-stdio.h>
 
 #define TOTAL_SAMPLES	89138
 
@@ -130,6 +131,10 @@ void wave_generate(int wav)
 */
 void tone_start(struct tonegen_s *tg, int note, dv_i32_t harmonic)
 {
+#if 0
+	sy_printf("tone_start: note = %d, harmonic = %d\n", note, harmonic);
+#endif
+
 	tg->position = -harmonic;
 	tg->harmonic = harmonic;
 	tg->root = &wavetable[note];

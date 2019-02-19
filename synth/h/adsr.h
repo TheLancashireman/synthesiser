@@ -23,6 +23,7 @@
 #include <dv-config.h>
 #include <davroska.h>
 #include <synth-config.h>
+#include <synth-stdio.h>
 
 /* adsr_s - structure that contains the envelope generator's parameters.
  *
@@ -58,6 +59,7 @@ struct envelope_s
 {
 	struct adsr_s *adsr;		/* ADSR profile */
 	int position;				/* Current position in the envelope */
+	char state;					/* State: a,d,s,r or x */
 };
 
 dv_i32_t envelope_gen(struct envelope_s *env);
@@ -65,6 +67,9 @@ dv_i32_t envelope_gen(struct envelope_s *env);
 static inline void envelope_start(struct envelope_s *env)
 {
 	env->position = 0;
+#if 0
+	sy_printf("e.start: %d\n", env->position);
+#endif
 }
 
 static inline void envelope_stop(struct envelope_s *env)
@@ -74,8 +79,11 @@ static inline void envelope_stop(struct envelope_s *env)
 	 * This might be a bit drastic if the note has a low sustain level and is released
 	 * during the attack or decay phase. We'll have to see.
 	*/
-	if ( env->position > 0  && env->position <= env->adsr->tSustain )
+	if ( (env->position >= 0)  && (env->position <= env->adsr->tSustain) )
 		env->position = env->adsr->tSustain + 1;
+#if 0
+	sy_printf("e.stop: %d\n", env->position);
+#endif
 }
 
 #endif
