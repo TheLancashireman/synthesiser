@@ -21,12 +21,28 @@
 #define SYNTH_DAVROSKA_H	1
 
 #include <davroska.h>
+#include <dv-arm-bcm2835-interruptcontroller.h>
 
-/* Tasks
+/* Davroska objects
 */
-extern dv_id_t Background;
+extern dv_id_t Background;		/* Background task */
+extern dv_id_t Timer;			/* Timer ISR - 10 ms tick */
+extern dv_id_t Monitor;			/* System monitor task */
+extern dv_id_t TickCounter;		/* Counter - counts timer interrupts */
+extern dv_id_t MonitorAlarm;	/* Alarm to activate the Monitor task */
 
+/* Task & ISR main functions
+*/
 extern void Background_main(void);
+extern void Monitor_main(void);
+extern void Timer_main(void);
 
+/* Callout functions
+*/
+extern dv_u32_t af_MonitorAlarm(dv_id_t a);
+
+/* Other identifiers
+*/
+#define hw_TimerInterruptId		dv_iid_timer
 
 #endif

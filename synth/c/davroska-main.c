@@ -12,7 +12,11 @@
 
 /* Object ids declared in synth-davroska.h
 */
-dv_id_t Background;
+dv_id_t Background;		/* Background task */
+dv_id_t Timer;			/* Timer ISR - 10 ms tick */
+dv_id_t Monitor;		/* System monitor task */
+dv_id_t TickCounter;	/* Counter - counts timer interrupts */
+dv_id_t	MonitorAlarm;	/* Alarm to activate the Monitor task */
 
 char *project_name = "SynthEffect";
 
@@ -80,6 +84,8 @@ void callout_idle(void)
 void callout_autostart(dv_id_t unused_mode)
 {
 	dv_activatetask(Background);
+
+	init_timing();
 }
 
 /* callout_addtasks() - davroska object creation
@@ -87,12 +93,14 @@ void callout_autostart(dv_id_t unused_mode)
 void callout_addtasks(dv_id_t unused_mode)
 {
 	Background = dv_addtask("Background", Background_main, 1, 1);
+	Monitor = dv_addtask("Monitor", Monitor_main, 3, 1);
 }
 
 /* callout_addisrs() - davroska object creation
 */
 void callout_addisrs(dv_id_t unused_mode)
 {
+	Timer = dv_addisr("Timer", &Timer_main, hw_TimerInterruptId, 6);
 }
 
 /* callout_addgroups() - davroska object creation
@@ -111,10 +119,12 @@ void callout_addmutexes(dv_id_t unused_mode)
 */
 void callout_addcounters(dv_id_t unused_mode)
 {
+	TickCounter = dv_addcounter("TickCounter");
 }
 
 /* callout_addalarms() - davroska object creation
 */
 void callout_addalarms(dv_id_t unused_mode)
 {
+	MonitorAlarm = dv_addalarm("MonitorAlarm", &af_MonitorAlarm);
 }

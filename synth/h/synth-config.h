@@ -47,10 +47,16 @@
 
 #define SYNTH_CTRL_N_POLY		128	/* No. of polyphonic channels */
 
+/* Configuration of davroska-related features
+*/
+#define TICK_INTERVAL_ms		10
+#define MONTIOR_INTERVAL_ms		1000
+
 extern void syntheffect_init();
 extern void panic(char *func, char *msg);
 extern void run_core1(void);
 extern void run_core2(void);
 extern void run_core3(void);
+extern void init_timing(void);
 
 #endif

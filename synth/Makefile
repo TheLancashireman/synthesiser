@@ -56,8 +56,10 @@ LD_OPT		+=	-lc
 DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-hardware.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-main.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/synth-effect-main.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/timing.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/synth-stdio.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/background.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/monitor.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/effect.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-adc.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/effect-dac.o
@@ -73,6 +75,7 @@ DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-time.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-extended.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-printf.o
 DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-xprintf.o
+DV_LD_OBJS	+=	$(DV_OBJ_D)/dv-memset32.o
 
 # davroska pi3-arm64 files 
 DV_LD_OBJS	+=	$(DV_OBJ_D)/davroska-arm64.o
