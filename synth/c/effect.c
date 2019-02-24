@@ -20,6 +20,7 @@
 #include <dv-config.h>
 #include <davroska.h>
 #include <effect.h>
+#include <monitor.h>
 
 /* This control structure controls a single, sequential processing sequence
  * However, it should be possible to extend to a multiprocessing environment
@@ -68,6 +69,7 @@ void effect_processor(void)
 	{
 		struct effect_s *e = effect_list.next;
 		x = effect_chain(e, x);
+		monitor_elapsed(&core1_loop, monitor_frc()); 
 	}
 }
 
