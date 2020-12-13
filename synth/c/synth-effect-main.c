@@ -130,7 +130,7 @@ void run_core1(void)
 	sy_printf("syntheffect_init: calling dv_pcm_init_i2s()\n");
 	dv_pcm_init_i2s();
 
-#if 0
+#if 1
 	/* Stuff the transmit fifos with 0
 	*/
 	for ( int i = 0; i < 63; i++ )
