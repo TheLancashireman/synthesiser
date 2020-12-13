@@ -93,7 +93,7 @@ void effect_synth_init(struct effect_s *e)
 	e->control = &synth;
 	e->name = "synth";
 
-	synth.n_polyphonic = 5;
+	synth.n_polyphonic = 10;
 	synth.gain = SYNTH_GAIN1/3;
 
 	adsr_init(&note_adsr, 3, 3, ADSR_GMAX-12, 3, SAMPLES_PER_SEC);
