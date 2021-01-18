@@ -30,6 +30,8 @@
  * Use any remaining A pins for potentiometers (pitch bend etc.)
  * 
 */
+#include <Arduino.h>
+#include "../arduino-common/midi.h"
 
 // Pins for data lines
 #define data_out_0	14		// PC0		}
@@ -67,7 +69,6 @@ struct keystate_s
 
 keystate_s keystate[kbd_nkeys];
 
-#include "../arduino-common/midi-thru.h"
 
 /* Keymap.
  * Numbers in the range 0..127 are midi notes.
@@ -89,13 +90,6 @@ const unsigned char keymap[kbd_nkeys] =
 
 char midi_chan = 0;
 char midi_offset = 36;
-
-void midi_send(char p0, char p1, char p2)
-{
-	Serial.print(p0);
-	Serial.print(p1);
-	Serial.print(p2);
-}
 
 /* setup() - standard Arduino "Init Task"
 */
@@ -134,7 +128,7 @@ void loop(void)
 	for (;;)
 	{
 		do {
-			midi_thru();
+			midi_in();
 		} while ( (millis() - then) < 10 );
 
 		then += 10;
@@ -178,7 +172,7 @@ void loop(void)
 								k += midi_offset;
 								if ( k >= 0 && k <= 127 )
 								{
-									midi_send(0x90+midi_chan, k, 127);
+									midi_out(0x90+midi_chan, k, 127);
 								}
 							}
 #else
@@ -205,7 +199,7 @@ void loop(void)
 								k += midi_offset;
 								if ( k >= 0 && k <= 127 )
 								{
-									midi_send(0x80+midi_chan, k, 127);
+									midi_out(0x80+midi_chan, k, 127);
 								}
 							}
 #else
@@ -228,4 +222,13 @@ void loop(void)
 		}
 #endif
 	}
+}
+
+/* midi_for_me() - handle midi commands for this instance
+ *
+ * Keyboard does not respond to commands, so this function always returns FALSE (0)
+*/
+uint8_t midi_for_me(uint8_t *mcmd, uint8_t n)
+{
+	return 0;
 }
