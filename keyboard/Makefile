@@ -10,6 +10,7 @@ BOARD_TAG              = nano
 ARDUINO_TOOLS_PATH     = $(ARDUINO_DIR)/hardware/tools
 ARDUINO_ETC_PATH       = $(ARDUINO_TOOLS_PATH)/avr/etc
 AVR_TOOLS_PATH         = $(ARDUINO_TOOLS_PATH)/avr/bin
+
 OTHER_OBJS             = $(OBJDIR)/midi.o
 
 include $(ARDUINO_BASE)/Arduino.make
