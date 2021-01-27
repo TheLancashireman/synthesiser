@@ -1,0 +1,8 @@
+build-cli
+loft
+*.flac
+*.o
+bin
+obj
+host-calc/wave
+organ/waveform
