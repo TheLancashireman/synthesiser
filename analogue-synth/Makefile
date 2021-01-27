@@ -15,7 +15,7 @@ PRJ_INCLUDES			= -I../arduino-common
 
 OTHER_OBJS				+= $(OBJDIR)/init.o
 OTHER_OBJS				+= $(OBJDIR)/timestamp.o
-#OTHER_OBJS				+= $(OBJDIR)/midi.o
+OTHER_OBJS				+= $(OBJDIR)/midi.o
 
 include $(ARDUINO_BASE)/Arduino.make
 

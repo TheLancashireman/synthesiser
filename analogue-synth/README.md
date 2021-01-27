@@ -7,7 +7,7 @@ control voltage (CV) and a note on/off signal (GATE).
 
 To allow the PWM outputs to generate analogue levels with very little ripple (and whose
 ripple is above normal hearing range), the timers are clocked at full speed. This means
-that the normal Arduino timing functions like millis(), micros() and delay() aren't
+that the normal Arduino timing functions, like millis(), micros() and delay(), aren't
 available. If you adapt the sketch and attempt to use Arduino timing, you should get a linker
 error because of the duplicate init() function.
 
@@ -51,7 +51,9 @@ In addition to the note-on and -off messages, some other messages are accepted:
 
 ## MIDI channel selection
 
-To be defined. Push-button and 7-segment display? Or 2x16 character LCD/VFD?
+To be defined. Push-buttons, probably.
+
+7-segment display? Or 2x16 character LCD/VFD?
 
 ## Tuning
 
@@ -67,5 +69,11 @@ Automatic: use this arduino to measure the frequency. This might mean using Time
 of Timer0, because Timer0 has the option of an external clock. The procedure would be similar to the
 external tuning (above) but done by the synth controller itself at the push of a button.
 
+## Other features
+
+Some ideas:
+
+LFO modulation of CV (with GATE on). Use ADC to sample LFO output, or generate LF signal internally.
+Or it might best be done over MIDI using the continuous controller messages
 
 
