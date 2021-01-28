@@ -28,16 +28,23 @@
  * millis(), micros() etc. don't work. To avoid strange problems, a dummy init() function is linked so
  * that you get a link-time error if you inadvertently use something from wiring.c
  *
+ * Timer1 also runs at full speed. This timer is used (by the common timerstamp.cpp functions)
+ * to measure time. You have to make sure you read the timer at least once every 4ms or so, otherwise
+ * time will drift. If there's some long computation going on, read the timer occasionally. No need to
+ * save the result: "(void)read_ticks();" will do.
 */
 #include <Arduino.h>
 #include "timestamp.h"
 #include "analogue-synth.h"
 #include "midi.h"
 
+#define ICP1	8	// Input capture 1 is on pin 8/PB0
+
 extern void init(void);
 
 static void setup_t0(void);
 static void setup_t1(void);
+static void setup_t2(void);
 
 int main(void)
 {
@@ -45,13 +52,16 @@ int main(void)
 	unsigned long long t0;
 	unsigned long elapsed;
 	init();
-	setup_t0();
-	setup_t1();
+	setup_t1();					// For timing
 	sei();
+
+	setup_dac();				// The DAC could be TC0 or TC2
+
+	pinMode(ICP1, INPUT);		// Set up the T1 input capture pin for frequency measurement
 
 	Serial.begin(115200);		// For real MIDI change this to 31250
 
-	my_midi_init();
+	my_midi_init();				// Initialise the tone generator
 
 	t0 = read_ticks();
 
@@ -65,13 +75,13 @@ int main(void)
 	}
 }
 
-void SetCV(uint8_t coarse, uint8_t fine)
+void set_cv(uint8_t coarse, uint8_t fine)
 {
 	OCR0A = (uint8_t)coarse;
 	OCR0B = (uint8_t)fine;
 }
 
-void SetGate(uint8_t g)
+void set_gate(uint8_t g)
 {
 	// ToDo: Which pin?
 }
@@ -83,9 +93,9 @@ static void setup_t0(void)
 	TCCR0B = 0x01;				/* Enable counter, prescaler = 1; WGM02 = 0 */
 	TIMSK0 = 0;					/* Disable all the interrupts */
 	TCNT0 = 0;
-	OCR0A = 0x80;				/* 50% duty cycle */
-	OCR0B = 0x40;				/* 25% duty cycle */
 	TIFR0 = 0x07;				/* Clear all pending interrupts */
+	OCR0A = 0x0;
+	OCR0B = 0x0;
 
 	DDRD |= (1<<5) | (1<<6);	/* Set PD5/OC0B and PD6/OC0A to output */
 }
@@ -98,4 +108,18 @@ static void setup_t1(void)
 	TIMSK1 = 0;					/* Disable all the interrupts */
 	TCNT1 = 0;
 	TIFR1 = 0x27;				/* Clear all pending interrupts */
+}
+
+static void setup_t2(void)
+{
+	TCCR2A = 0xa3;				/* Fast PWM, non-inverting on outputs A and B */
+	TCCR2B = 0x01;				/* Enable counter, prescaler = 1; WGM02 = 0 */
+	TIMSK2 = 0;					/* Disable all the interrupts */
+	TCNT2 = 0;
+	TIFR2 = 0x07;				/* Clear all pending interrupts */
+	OCR2A = 0x0;
+	OCR2B = 0x0;
+
+	DDRB |= (1<<3);				/* Set PB3/OC2A to output */
+	DDRD |= (1<<3);				/* Set PD3/OC2B to output */
 }

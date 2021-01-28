@@ -20,10 +20,33 @@
 #ifndef ANALOGUE_SYNTH_H
 #define ANALOGUE_SYNTH_H	1
 
+#define DAC		0		/* Set to 0 to use TC0/OC0A/OC0B. Set to 2 to use TC2/OC2A/PC2B */
+
+#if DAC == 0
+
+#define DAC_COARSE	OCR0A
+#define DAC_FINE	OCR0B
+#define setup_dac()	setup_t0()
+
+#elif DAC == 2
+
+#define DAC_COARSE	OCR2A
+#define DAC_FINE	OCR2B
+#define setup_dac()	setup_t2()
+
+#else
+#error "Unsuupported DAC setting
+#endif
+
 extern void init(void);
-extern void SetCV(uint8_t coarse, uint8_t fine);
-extern void SetGate(uint8_t g);
+extern void set_cv(uint8_t coarse, uint8_t fine);
+extern void set_gate(uint8_t g);
+extern void display_freq(double f);
+
 extern uint8_t midi_for_me(uint8_t *mcmd, uint8_t n);
 extern void my_midi_init(void);
+
+extern double freq(unsigned long e);
+extern void freq_init(void);
 
 #endif

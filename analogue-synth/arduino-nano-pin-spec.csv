@@ -1,0 +1,53 @@
+,,,,,,,
+,Pin,Main,Port no.,Alt,Project use,,
+,1,TX1,D1,PD1/TxD,MIDI out,,
+,2,RX0,D0,PD0/RxD,MIDI in,,
+,3,RESET,,PC6/Reset,,,
+,4,GND,,,,,
+,5,PD2,D2,PD2/INT0,,,
+,6,PD3,D3,PD3/INT1/PWM/OC2B,,,
+,7,PD4,D4,PD4/T0/XCK,,,
+,8,PD5,D5,PD5/T1/OC0B/PWM,DAC fine,,
+,9,PD6,D6,PD6/AIN0/OC0A/PWM,DAC coarse,,
+,10,PD7,D7,PD7/AIN1,,,
+,11,PB0,D8,PB0/CLK0/ICP1,,,
+,12,PB1,D9,PB1/OC1A/PWM,,,
+,13,PB2,D10,PB2/OC1B/SS/PWM,,,
+,14,PB3,D11,PB3/OC2A/MOSI/PWM,,,
+,15,PB4,D12,PB4/MISO,,,
+,16,PB5,D13,PB5/SCK/LED,,,
+,17,3v3,,,,,
+,18,Aref,,,,,
+,19,PC0,D14/A0,PC0/ADC0,,,
+,20,PC1,D15/A1,PC1/ADC1,,,
+,21,PC2,D16/A2,PC2/ADC2,,,
+,22,PC3,D17/A3,PD3/ADC3,,,
+,23,PC4,D18/A4,PC4/ADC4/SDA,,,
+,24,PC5,D19/A5,PC5/ADC5/SCL,,,
+,25,ADC6,A6,ADC6,,,
+,26,ADC7,A7,ADC7,,,
+,27,5v,,,,,
+,28,PC6,,PC6/Reset,,,
+,29,GND,,,,,
+,30,Vin,,,,,
+,,,,,,,
+,Physical layout,,,,,,
+,Port no.,Name,Pin no.,Arduino Board,Pin no.,Name,Port no.
+,,,,layout,,,
+,,,,SPI connector,,,
+,D1,TX1,1,,30,Vin,
+,D0,RX0,2,,29,GND,
+,,RESET,3,,28,RESET,
+,,GND,4,,27,5v,
+,D2,PD2,5,,26,ADC7,A7
+,D3,PD3,6,,25,ADC6,A6
+,D4,PD4,7,,24,PC5,D19/A5
+,D5,PD5,8,,23,PC4,D18/A4
+,D6,PD6,9,,22,PC3,D17/A3
+,D7,PD7,10,,21,PC2,D16/A2
+,D8,PB0,11,,20,PC1,D15/A1
+,D9,PB1,12,,19,PC0,D14/A0
+,D10,PB2,13,,18,Aref,
+,D11,PB3,14,,17,3v3,
+,D12,PB4,15,,16,PB5,D13
+,,,,USB connector,,,

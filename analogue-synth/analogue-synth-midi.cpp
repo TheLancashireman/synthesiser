@@ -99,8 +99,8 @@ void my_midi_init(void)
 
 	/* ToDo: load notes array from eeprom */
 
-	SetCV(0, 0);
-	SetGate(0);
+	set_cv(0, 0);
+	set_gate(0);
 }
 
 /* start_note() - start a note playing
@@ -110,18 +110,18 @@ static void start_note(uint8_t note)
 	// If the gate is on, turn it off
 	if ( current_note.gate )
 	{
-		SetGate(0);
+		set_gate(0);
 		tick_delay(MILLIS_TO_TICKS(20));	/* Allow time for ADSR trigger to recover */
 	}
 
 	current_note.midi_note = note;
 	current_note.dac.coarse = notes[note].coarse;
 	current_note.dac.fine = notes[note].fine;
-	SetCV(current_note.dac.coarse, current_note.dac.fine);
+	set_cv(current_note.dac.coarse, current_note.dac.fine);
 	tick_delay(MILLIS_TO_TICKS(20));	/* Allow time for DAC to settle */
 
 	current_note.gate = 1;
-	SetGate(1);
+	set_gate(1);
 }
 
 /* stop_note() - stop playing a note
@@ -132,7 +132,7 @@ static void stop_note(uint8_t note)
 	if ( current_note.midi_note == note )
 	{
 		current_note.gate = 0;
-		SetGate(0);
+		set_gate(0);
 		tick_delay(MILLIS_TO_TICKS(20));	/* Allow time for ADSR trigger to recover */
 	}
 }
@@ -149,31 +149,31 @@ static void controller_change(uint8_t ctrl, uint8_t val)
 	case 0:
 		current_note.dac.coarse = val;
 		current_note.midi_note = 0xff;
-		SetCV(current_note.dac.coarse, current_note.dac.fine);
+		set_cv(current_note.dac.coarse, current_note.dac.fine);
 		break;
 
 	case 1:
 		current_note.dac.coarse = val + 128;
 		current_note.midi_note = 0xff;
-		SetCV(current_note.dac.coarse, current_note.dac.fine);
+		set_cv(current_note.dac.coarse, current_note.dac.fine);
 		break;
 
 	case 2:
 		current_note.dac.fine = val;
 		current_note.midi_note = 0xff;
-		SetCV(current_note.dac.coarse, current_note.dac.fine);
+		set_cv(current_note.dac.coarse, current_note.dac.fine);
 		break;
 
 	case 3:
 		current_note.dac.fine = val + 128;
 		current_note.midi_note = 0xff;
-		SetCV(current_note.dac.coarse, current_note.dac.fine);
+		set_cv(current_note.dac.coarse, current_note.dac.fine);
 		break;
 
 	case 4:
 		current_note.gate = val & 0x01;
 		current_note.midi_note = 0xff;
-		SetGate(current_note.gate);
+		set_gate(current_note.gate);
 		break;
 
 	default:
