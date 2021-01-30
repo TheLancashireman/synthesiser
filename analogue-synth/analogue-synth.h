@@ -20,16 +20,18 @@
 #ifndef ANALOGUE_SYNTH_H
 #define ANALOGUE_SYNTH_H	1
 
-#define DAC		0		/* Set to 0 to use TC0/OC0A/OC0B. Set to 2 to use TC2/OC2A/PC2B */
+#define DAC		0		// Set to 0 to use TC0/OC0A/OC0B. Set to 2 to use TC2/OC2A/PC2B (untested)
 
 #if DAC == 0
 
+// DAC pins for nano/Timer0
 #define DAC_COARSE	OCR0A
 #define DAC_FINE	OCR0B
 #define setup_dac()	setup_t0()
 
 #elif DAC == 2
 
+// DAC pins for nano/Timer2
 #define DAC_COARSE	OCR2A
 #define DAC_FINE	OCR2B
 #define setup_dac()	setup_t2()
@@ -38,10 +40,33 @@
 #error "Unsuupported DAC setting
 #endif
 
+// LCD pin selections for nano
+#define lcd_d4		14
+#define lcd_d5		15
+#define lcd_d6		16
+#define lcd_d7		17
+#define lcd_rs		9
+#define lcd_e		13
+
+// Display positions
+#define NOTE_ROW	0
+#define NOTE_COL	0
+#define FREQ_ROW	0
+#define FREQ_COL	6
+#define COARSE_ROW	1
+#define COARSE_COL	0
+#define FINE_ROW	1
+#define FINE_COL	6
+
 extern void init(void);
 extern void set_cv(uint8_t coarse, uint8_t fine);
 extern void set_gate(uint8_t g);
+
 extern void display_freq(double f);
+extern void display_note(uint8_t n);
+extern void display_coarse(uint8_t v);
+extern void display_fine(uint8_t v);
+extern void display_gate(uint8_t g);
 
 extern uint8_t midi_for_me(uint8_t *mcmd, uint8_t n);
 extern void my_midi_init(void);

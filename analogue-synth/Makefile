@@ -3,6 +3,7 @@ ARDUINO_DIR				= $(ARDUINO_BASE)/arduino-1.6.8
 TARGET					= analogue
 MCU						= atmega328p
 F_CPU					= 16000000
+ARDUINO_LIBS			= LiquidCrystal
 ARDUINO_PORT			= /dev/ttyUSB0
 AVRDUDE_ARD_BAUDRATE	= 57600
 AVRDUDE_ARD_PROGRAMMER	= arduino

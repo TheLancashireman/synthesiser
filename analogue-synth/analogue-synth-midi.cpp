@@ -30,14 +30,14 @@ struct dacvals_s
 
 struct notestate_s
 {
-	struct dacvals_s dac;		/* Status of the DAC outputs */
-	uint8_t gate;				/* Status of the gate output */
-	uint8_t midi_note;			/* 0x00 to 0x7f (0 to 127) or 0xff if not a note */
-	uint8_t channel;			/* Channel no. 0x00 to 0x0f */
+	struct dacvals_s dac;		// Status of the DAC outputs
+	uint8_t gate;				// Status of the gate output
+	uint8_t midi_note;			// 0x00 to 0x7f (0 to 127) or 0xff if not a note
+	uint8_t channel;			// Channel no. 0x00 to 0x0f
 };
 
-struct dacvals_s notes[128];		/* One DAC value for each MIDI note */
-struct notestate_s current_note;	/* Only one channel (at the moment) */
+struct dacvals_s notes[128];		// One DAC value for each MIDI note
+struct notestate_s current_note;	// Only one channel (at the moment)
 
 static void controller_change(uint8_t ctrl, uint8_t val);
 static void start_note(uint8_t note);
@@ -94,10 +94,10 @@ void my_midi_init(void)
 	current_note.dac.coarse = 0;
 	current_note.dac.fine = 0;
 	current_note.gate = 0;
-	current_note.midi_note = 0xff;		/* No note playing */
-	current_note.channel = 0;			/* ToDo: load from eeprom */
+	current_note.midi_note = 0xff;		// No note playing
+	current_note.channel = 0;			// ToDo: load from eeprom
 
-	/* ToDo: load notes array from eeprom */
+	// ToDo: load notes array from eeprom
 
 	set_cv(0, 0);
 	set_gate(0);
@@ -111,14 +111,14 @@ static void start_note(uint8_t note)
 	if ( current_note.gate )
 	{
 		set_gate(0);
-		tick_delay(MILLIS_TO_TICKS(20));	/* Allow time for ADSR trigger to recover */
+		tick_delay(MILLIS_TO_TICKS(20));	// Allow time for ADSR trigger to recover
 	}
 
 	current_note.midi_note = note;
 	current_note.dac.coarse = notes[note].coarse;
 	current_note.dac.fine = notes[note].fine;
 	set_cv(current_note.dac.coarse, current_note.dac.fine);
-	tick_delay(MILLIS_TO_TICKS(20));	/* Allow time for DAC to settle */
+	tick_delay(MILLIS_TO_TICKS(20));	// Allow time for DAC to settle
 
 	current_note.gate = 1;
 	set_gate(1);
@@ -133,7 +133,7 @@ static void stop_note(uint8_t note)
 	{
 		current_note.gate = 0;
 		set_gate(0);
-		tick_delay(MILLIS_TO_TICKS(20));	/* Allow time for ADSR trigger to recover */
+		tick_delay(MILLIS_TO_TICKS(20));	// Allow time for ADSR trigger to recover
 	}
 }
 

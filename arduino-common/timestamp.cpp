@@ -20,8 +20,8 @@
 #include <Arduino.h>
 #include "timestamp.h"
 
-unsigned long long timestamp;
-unsigned last_t1;
+unsigned long long ts_timestamp;
+unsigned ts_last_t1;
 
 /* read_ticks() returns an ever increasing time
  *
@@ -38,10 +38,10 @@ unsigned long long read_ticks(void)
 {
 	cli();
 	unsigned t1 = TCNT1;
-	unsigned diff = t1 - last_t1;
-	unsigned long long retval = timestamp + diff;
-	timestamp = retval;
-	last_t1 = t1;
+	unsigned diff = t1 - ts_last_t1;
+	unsigned long long retval = ts_timestamp + diff;
+	ts_timestamp = retval;
+	ts_last_t1 = t1;
 	sei();
 	return retval;
 }
@@ -56,6 +56,30 @@ void tick_delay(unsigned long long dly)
 	{
 		/* Twiddle thumbs */
 	}
+}
+
+/* init_timestamp() - initialise timer 1 for timestamp operation
+*/
+void init_timestamp(void)
+{
+	 TCCR1A = 0;				/* Normal port operation */
+	 TCCR1B = 0x01;				/* Enable counter, prescaler = 1; WGM12/3 = 0 */
+	 TCCR1C = 0;				/* Probably not needed */
+	 TIMSK1 = 0;				/* Disable all the interrupts */
+	 TIFR1 = 0x27;				/* Clear all pending interrupts */
+	 TCNT1 = 0;
+}
+
+/* Arduino compatibility functions
+*/
+void delay(unsigned long ms)
+{
+	tick_delay(MILLIS_TO_TICKS(ms));
+}
+
+void delayMicroseconds(unsigned int us)
+{
+	tick_delay(MICROS_TO_TICKS(us));
 }
 
 /* Conversion functions - are these needed?

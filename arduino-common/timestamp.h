@@ -25,9 +25,13 @@
 #define MICROS_TO_TICKS(u)	((((unsigned long long)(u))*HZ)/1000000)
 #define MILLIS_TO_TICKS(m)	MICROS_TO_TICKS(((unsigned long long)(m))*1000)
 
+extern unsigned long long ts_timestamp;
+extern unsigned ts_last_t1;
+
 extern unsigned long long read_ticks(void);
 extern void tick_delay(unsigned long long dly);
 extern unsigned long long micros_to_ticks(unsigned long long micros);
 extern unsigned long long millis_to_ticks(unsigned long millis);
+extern void init_timestamp(void);
 
 #endif

@@ -1,4 +1,4 @@
-/* freq.cpp - frequency measurement using timer1
+/* analogue-synth-freq.cpp - frequency measurement using timer1
  *
  * (c) 2020 David Haworth
  *
@@ -23,67 +23,87 @@
 
 #define ICP1	8	// Input capture 1 is on pin 8/PB0
 
-uint16_t oflo;
+/* ISR(TIMER1_OVF_vect) - interrupt handler for the timer overflow
+ *
+ * Increment a counter
+*/
+uint8_t n_oflo;	// Number of overflows since the last time we looked
 
 ISR(TIMER1_OVF_vect)
 {
-	oflo++;
+	n_oflo++;
 }
 
-uint16_t last_cap;		// Last value of capture register
-uint16_t last_oflo;	// Value of overflow count at last capture
-
-volatile uint8_t n_caps;		// No of captures since last pickup
-volatile uint32_t period;		// Measured period in ticks
+/* ISR(TIMER1_CAPT_vect) - interrupt handler for the capture interrupt
+ *
+ * Store the capture time and increment a counter
+*/
+uint8_t n_cap;		// Number of captures since tthe last time we looked
+uint16_t cap;		// Capture value of most recent capture event
 
 ISR(TIMER1_CAPT_vect)
 {
-	uint16_t cap = ICR1;		// Read the time of the capture
-	uint16_t ofl = oflo;
-
-	if ( n_caps == 0 )
-	{
-		period = ((uint32_t)cap - (uint32_t)last_cap) + ( ((uint32_t)(oflo - last_oflo)) << 16 );
-	}
-
-	n_caps++;
+	cap = ICR1;		// Read the time of the capture
+	n_cap++;
 }
 
+/* freq() - calculate the signal frequency
+ *
+ * Using the difference between the capture time (from the ISR) and the last known capture time,
+ * along with the number of overflows, the interval can be calculated.
+ * The number of captures in that interval is also known, so the average frequency can be calculated.
+*/
+uint16_t last_cap;
 unsigned long update_interval;
 
 double freq(unsigned long e)
 {
+	uint8_t nc, no;
+	uint16_t v;
+
 	update_interval += e;
 
-	if ( n_caps > 0 )
+	cli();
+	nc = n_cap;
+	if ( nc > 0 )		// If there's been at least one capture, read and reset the interrupt handlers' data
 	{
-		double f = 16000000.0/(double)period;
+		v = cap;
+		no = n_oflo;
+		n_cap = 0;
+		n_oflo = 0;
+	}
+	sei();
+
+	if ( nc > 0 )		// If there's been a capture, calculate and return the frequency
+	{
+		uint32_t t = (uint32_t)v - (uint32_t)last_cap + (uint32_t)no * 65536ul;
+		last_cap = v;
+
+		double f = ((double)nc * 16000000.0) / (double)t;
 
 		if ( update_interval > MILLIS_TO_TICKS(500) )
 		{
 			display_freq(f);
-			update_interval -= MILLIS_TO_TICKS(500);
+			update_interval = 0;
 		}
-
-		n_caps = 0;
 
 		return f;
 	}
+	else
+	if ( update_interval > MILLIS_TO_TICKS(2000) )
+	{
+		// More than 2 seconds without a pulse; assume 0.0 Hz
+		display_freq(0.0);
+		update_interval = 0;
+		return 0.0;
+	}
 
-	return -1.0;
+	return -1.0;	// No frequency calculated
 }
 
 void freq_init(void)
 {
 	pinMode(ICP1, INPUT);		// Set up the T1 input capture pin for frequency measurement
-}
-
-static void setup_t1(void)
-{
-	TCCR1A = 0;					/* Normal port operation */
-	TCCR1B = 0x01;				/* Enable counter, prescaler = 1; WGM12/3 = 0 */
-	TCCR1C = 0;					/* Probably not needed */
-	TIMSK1 = 0;					/* Disable all the interrupts */
-	TCNT1 = 0;
-	TIFR1 = 0x27;				/* Clear all pending interrupts */
+	TCCR1B |= 0x40;				// Input capture on leading edge
+	TIMSK1 |= 0x21;				// Enable input capture and overflow interrupts
 }

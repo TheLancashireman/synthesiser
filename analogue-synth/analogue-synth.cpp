@@ -37,14 +37,18 @@
 #include "timestamp.h"
 #include "analogue-synth.h"
 #include "midi.h"
+#include <LiquidCrystal.h>
 
 #define ICP1	8	// Input capture 1 is on pin 8/PB0
+
+LiquidCrystal *lcd;
 
 extern void init(void);
 
 static void setup_t0(void);
 static void setup_t1(void);
 static void setup_t2(void);
+static void print_spaces(uint8_t n);
 
 int main(void)
 {
@@ -52,16 +56,28 @@ int main(void)
 	unsigned long long t0;
 	unsigned long elapsed;
 	init();
-	setup_t1();					// For timing
 	sei();
 
-	setup_dac();				// The DAC could be TC0 or TC2
+	init_timestamp();
+	setup_dac();					// The DAC could be TC0 or TC2
+	pinMode(ICP1, INPUT_PULLUP);	// Set up the T1 input capture pin for frequency measurement
 
-	pinMode(ICP1, INPUT);		// Set up the T1 input capture pin for frequency measurement
+	Serial.begin(115200);			// For real MIDI change this to 31250
 
-	Serial.begin(115200);		// For real MIDI change this to 31250
+	my_midi_init();					// Initialise the tone generator
+	freq_init();					// Initialise the frequency measurement
 
-	my_midi_init();				// Initialise the tone generator
+	// LCD controller in 4-bit mode without read
+	lcd = new LiquidCrystal(lcd_rs, lcd_e, lcd_d4, lcd_d5, lcd_d6, lcd_d7);
+	lcd->begin(16, 2);
+
+	// Display a friendly greeting
+	lcd->setCursor(0,0);
+	lcd->print(F("AnalogueSynth"));
+	lcd->setCursor(0,1);
+	lcd->print(F("(c) dh   GPLv3"));
+	tick_delay(MILLIS_TO_TICKS(2000));
+	lcd->clear();
 
 	t0 = read_ticks();
 
@@ -70,6 +86,8 @@ int main(void)
 		t = read_ticks();		// Keep the timestamp updated
 		elapsed = t - t0;
 		t0 = t;
+
+		(void)freq(elapsed);	// Discard the result for now
 
 		midi_in();				// Look for incoming midi messages
 	}
@@ -86,40 +104,89 @@ void set_gate(uint8_t g)
 	// ToDo: Which pin?
 }
 
+void display_freq(double f)
+{
+	uint8_t np;
+	lcd->setCursor(FREQ_COL, FREQ_ROW);
+	np = lcd->print(f, 2);
+	np += lcd->print(F("Hz"));
+	print_spaces(16 - FREQ_COL - np);
+}
+
+void display_note(uint8_t n)
+{
+	uint8_t np;
+	lcd->setCursor(NOTE_COL, NOTE_ROW);
+	np = lcd->print(F("n:"));
+	np += lcd->print(n);
+	print_spaces(6-np);
+}
+
+void display_coarse(uint8_t v)
+{
+	uint8_t np;
+	lcd->setCursor(COARSE_COL, COARSE_ROW);
+	np = lcd->print(F("c:"));
+	np += lcd->print(v);
+	print_spaces(6-np);
+}
+
+void display_fine(uint8_t v)
+{
+	uint8_t np;
+	lcd->setCursor(FINE_COL, FINE_ROW);
+	np = lcd->print(F("f:"));
+	np += lcd->print(v);
+	print_spaces(6-np);
+}
+
+void display_gate(uint8_t g)
+{
+}
+
+static void print_spaces(uint8_t n)
+{
+	while ( n > 0 )
+	{
+		lcd->print(' ');
+		n--;
+	}
+}
+
 static void setup_t0(void)
 {
 	GTCCR = 0;
-	TCCR0A = 0xa3;				/* Fast PWM, non-inverting on outputs A and B */
-	TCCR0B = 0x01;				/* Enable counter, prescaler = 1; WGM02 = 0 */
-	TIMSK0 = 0;					/* Disable all the interrupts */
+	TCCR0A = 0xa3;				// Fast PWM, non-inverting on outputs A and B
+	TCCR0B = 0x01;				// Enable counter, prescaler = 1; WGM02 = 0
+	TIMSK0 = 0;					// Disable all the interrupts
 	TCNT0 = 0;
-	TIFR0 = 0x07;				/* Clear all pending interrupts */
+	TIFR0 = 0x07;				// Clear all pending interrupts
 	OCR0A = 0x0;
 	OCR0B = 0x0;
 
-	DDRD |= (1<<5) | (1<<6);	/* Set PD5/OC0B and PD6/OC0A to output */
+	DDRD |= (1<<5) | (1<<6);	// Set PD5/OC0B and PD6/OC0A to output
 }
 
 static void setup_t1(void)
 {
-	TCCR1A = 0;					/* Normal port operation */
-	TCCR1B = 0x01;				/* Enable counter, prescaler = 1; WGM12/3 = 0 */
-	TCCR1C = 0;					/* Probably not needed */
-	TIMSK1 = 0;					/* Disable all the interrupts */
+	TCCR1A = 0;					// Normal port operation
+	TCCR1B = 0x01;				// Enable counter, prescaler = 1; WGM12/3 = 0
+	TCCR1C = 0;					// Probably not needed
+	TIMSK1 = 0;					// Disable all the interrupts
 	TCNT1 = 0;
-	TIFR1 = 0x27;				/* Clear all pending interrupts */
+	TIFR1 = 0x27;				// Clear all pending interrupts
 }
 
 static void setup_t2(void)
 {
-	TCCR2A = 0xa3;				/* Fast PWM, non-inverting on outputs A and B */
-	TCCR2B = 0x01;				/* Enable counter, prescaler = 1; WGM02 = 0 */
-	TIMSK2 = 0;					/* Disable all the interrupts */
+	TCCR2A = 0xa3;				// Fast PWM, non-inverting on outputs A and B
+	TCCR2B = 0x01;				// Enable counter, prescaler = 1; WGM02 = 0
+	TIMSK2 = 0;					// Disable all the interrupts
 	TCNT2 = 0;
-	TIFR2 = 0x07;				/* Clear all pending interrupts */
+	TIFR2 = 0x07;				// Clear all pending interrupts
 	OCR2A = 0x0;
 	OCR2B = 0x0;
 
-	DDRB |= (1<<3);				/* Set PB3/OC2A to output */
-	DDRD |= (1<<3);				/* Set PD3/OC2B to output */
+	DDRB |= (1<<3);				// Set PB3/OC2A to output
+	DDRD |= (1<<3);				// Set PD3/OC2B to output
 }
