@@ -1,6 +1,6 @@
 /* analogue-synth-midi - a midi interface for an analogue synthiesiser
  *
- * (c) 2020 David Haworth
+ * (c) David Haworth
  *
  *	This file is part of analogue-synth.
  *
@@ -97,6 +97,10 @@ void my_midi_init(void)
 	current_note.midi_note = 0xff;		// No note playing
 	current_note.channel = 0;			// ToDo: load from eeprom
 
+	display_note(0xff);
+	display_coarse(0);
+	display_fine(0);
+
 	// ToDo: load notes array from eeprom
 
 	set_cv(0, 0);
@@ -122,6 +126,9 @@ static void start_note(uint8_t note)
 
 	current_note.gate = 1;
 	set_gate(1);
+
+	display_note(note);
+	display_gate(1);
 }
 
 /* stop_note() - stop playing a note
@@ -134,6 +141,7 @@ static void stop_note(uint8_t note)
 		current_note.gate = 0;
 		set_gate(0);
 		tick_delay(MILLIS_TO_TICKS(20));	// Allow time for ADSR trigger to recover
+		display_gate(0);
 	}
 }
 
@@ -150,30 +158,35 @@ static void controller_change(uint8_t ctrl, uint8_t val)
 		current_note.dac.coarse = val;
 		current_note.midi_note = 0xff;
 		set_cv(current_note.dac.coarse, current_note.dac.fine);
+		display_coarse(current_note.dac.coarse);
 		break;
 
 	case 1:
 		current_note.dac.coarse = val + 128;
 		current_note.midi_note = 0xff;
 		set_cv(current_note.dac.coarse, current_note.dac.fine);
+		display_coarse(current_note.dac.coarse);
 		break;
 
 	case 2:
 		current_note.dac.fine = val;
 		current_note.midi_note = 0xff;
 		set_cv(current_note.dac.coarse, current_note.dac.fine);
+		display_fine(current_note.dac.fine);
 		break;
 
 	case 3:
 		current_note.dac.fine = val + 128;
 		current_note.midi_note = 0xff;
 		set_cv(current_note.dac.coarse, current_note.dac.fine);
+		display_fine(current_note.dac.fine);
 		break;
 
 	case 4:
 		current_note.gate = val & 0x01;
 		current_note.midi_note = 0xff;
 		set_gate(current_note.gate);
+		display_gate(current_note.gate);
 		break;
 
 	default:

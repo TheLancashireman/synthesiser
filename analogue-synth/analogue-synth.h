@@ -1,6 +1,6 @@
 /* analogue-synth - a midi interface for an analogue synthiesiser
  *
- * (c) 2020 David Haworth
+ * (c) David Haworth
  *
  *	This file is part of analogue-synth.
  *

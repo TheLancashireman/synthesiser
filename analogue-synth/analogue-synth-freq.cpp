@@ -1,6 +1,6 @@
 /* analogue-synth-freq.cpp - frequency measurement using timer1
  *
- * (c) 2020 David Haworth
+ * (c) David Haworth
  *
  *	This file is part of analogue-synth.
  *
@@ -56,6 +56,9 @@ ISR(TIMER1_CAPT_vect)
 uint16_t last_cap;
 unsigned long update_interval;
 
+unsigned long total_time;
+unsigned total_cap;
+
 double freq(unsigned long e)
 {
 	uint8_t nc, no;
@@ -74,26 +77,31 @@ double freq(unsigned long e)
 	}
 	sei();
 
-	if ( nc > 0 )		// If there's been a capture, calculate and return the frequency
+	if ( nc > 0 )		// If there's been at least one capture, accumulate the time and no of captures.
 	{
-		uint32_t t = (uint32_t)v - (uint32_t)last_cap + (uint32_t)no * 65536ul;
+		total_time += (uint32_t)v  - (uint32_t)last_cap + (uint32_t)no * 65536ul;
+		total_cap += nc;
 		last_cap = v;
 
-		double f = ((double)nc * 16000000.0) / (double)t;
-
-		if ( update_interval > MILLIS_TO_TICKS(500) )
+		// Once per second, calculate and display the frequency
+		if ( update_interval > MILLIS_TO_TICKS(1000) )
 		{
+			double f = ((double)total_cap * 16000000.0) / (double)total_time;
 			display_freq(f);
-			update_interval = 0;
-		}
 
-		return f;
+			total_cap = 0;
+			total_time = 0;
+			update_interval = 0;
+
+			return f;
+		}
 	}
-	else
-	if ( update_interval > MILLIS_TO_TICKS(2000) )
+	else if ( update_interval > MILLIS_TO_TICKS(2000) )
 	{
 		// More than 2 seconds without a pulse; assume 0.0 Hz
 		display_freq(0.0);
+		total_cap = 0;
+		total_time = 0;
 		update_interval = 0;
 		return 0.0;
 	}

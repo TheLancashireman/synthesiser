@@ -1,6 +1,6 @@
 /* analogue-synth - a midi interface for an analogue synthiesiser
  *
- * (c) 2020 David Haworth
+ * (c) David Haworth
  *
  *	This file is part of analogue-synth.
  *
@@ -19,7 +19,8 @@
 */
 
 /*
- * Control an analogue synthesiser by MIDI, using a DAC for the control voltage and a digital gate output.
+ * Control an analogue synthesiser by MIDI, using a DAC for the control voltage
+ * and a digital gate output.
  *
  * See README.md for details.
  *
@@ -64,7 +65,6 @@ int main(void)
 
 	Serial.begin(115200);			// For real MIDI change this to 31250
 
-	my_midi_init();					// Initialise the tone generator
 	freq_init();					// Initialise the frequency measurement
 
 	// LCD controller in 4-bit mode without read
@@ -78,6 +78,8 @@ int main(void)
 	lcd->print(F("(c) dh   GPLv3"));
 	tick_delay(MILLIS_TO_TICKS(2000));
 	lcd->clear();
+
+	my_midi_init();					// Initialise the tone generator
 
 	t0 = read_ticks();
 
@@ -108,7 +110,7 @@ void display_freq(double f)
 {
 	uint8_t np;
 	lcd->setCursor(FREQ_COL, FREQ_ROW);
-	np = lcd->print(f, 2);
+	np = lcd->print(f, ((f < 100.0) ? 3 : 2));
 	np += lcd->print(F("Hz"));
 	print_spaces(16 - FREQ_COL - np);
 }
@@ -118,7 +120,11 @@ void display_note(uint8_t n)
 	uint8_t np;
 	lcd->setCursor(NOTE_COL, NOTE_ROW);
 	np = lcd->print(F("n:"));
-	np += lcd->print(n);
+	if ( n <= 127 )
+	{
+		np += lcd->print(n);
+	}
+	
 	print_spaces(6-np);
 }
 
