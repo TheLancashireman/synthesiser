@@ -57,6 +57,8 @@
 #define COARSE_COL	0
 #define FINE_ROW	1
 #define FINE_COL	6
+#define GATE_ROW	1
+#define GATE_COL	15
 
 extern void init(void);
 extern void set_cv(uint8_t coarse, uint8_t fine);
@@ -66,12 +68,14 @@ extern void display_freq(double f);
 extern void display_note(uint8_t n);
 extern void display_coarse(uint8_t v);
 extern void display_fine(uint8_t v);
-extern void display_gate(uint8_t g);
+extern void display_gate(char g);
 
 extern uint8_t midi_for_me(uint8_t *mcmd, uint8_t n);
 extern void my_midi_init(void);
 
-extern double freq(unsigned long e);
+extern double freq(unsigned long e, unsigned long update_interval);
 extern void freq_init(void);
+
+extern double get_note_frequency(uint8_t note);
 
 #endif

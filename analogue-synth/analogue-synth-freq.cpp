@@ -38,12 +38,14 @@ ISR(TIMER1_OVF_vect)
  *
  * Store the capture time and increment a counter
 */
-uint8_t n_cap;		// Number of captures since tthe last time we looked
 uint16_t cap;		// Capture value of most recent capture event
+uint8_t cap_oflo;	// Overflow value of most recent capture event
+uint8_t n_cap;		// Number of captures since tthe last time we looked
 
 ISR(TIMER1_CAPT_vect)
 {
 	cap = ICR1;		// Read the time of the capture
+	cap_oflo = n_oflo;
 	n_cap++;
 }
 
@@ -52,57 +54,61 @@ ISR(TIMER1_CAPT_vect)
  * Using the difference between the capture time (from the ISR) and the last known capture time,
  * along with the number of overflows, the interval can be calculated.
  * The number of captures in that interval is also known, so the average frequency can be calculated.
+ *
+ * The input parameter e is the number of timer ticks since the last call.
+ * The input parameter update_interval is the required update interval for the display.
 */
 uint16_t last_cap;
-unsigned long update_interval;
+uint8_t last_oflo;
+unsigned long update_elapsed;
 
 unsigned long total_time;
 unsigned total_cap;
 
-double freq(unsigned long e)
+double freq(unsigned long e, unsigned long update_interval)
 {
 	uint8_t nc, no;
 	uint16_t v;
 
-	update_interval += e;
+	update_elapsed += e;
 
 	cli();
 	nc = n_cap;
 	if ( nc > 0 )		// If there's been at least one capture, read and reset the interrupt handlers' data
 	{
 		v = cap;
-		no = n_oflo;
+		no = cap_oflo;
 		n_cap = 0;
-		n_oflo = 0;
 	}
 	sei();
 
 	if ( nc > 0 )		// If there's been at least one capture, accumulate the time and no of captures.
 	{
-		total_time += (uint32_t)v  - (uint32_t)last_cap + (uint32_t)no * 65536ul;
+		total_time += (uint32_t)v  - (uint32_t)last_cap + ((uint32_t)((uint8_t)(no - last_oflo))) * 65536ul;
 		total_cap += nc;
 		last_cap = v;
+		last_oflo = no;
 
-		// Once per second, calculate and display the frequency
-		if ( update_interval > MILLIS_TO_TICKS(1000) )
+		// Once per interval, calculate and display the frequency
+		if ( update_elapsed > update_interval )
 		{
 			double f = ((double)total_cap * 16000000.0) / (double)total_time;
 			display_freq(f);
 
 			total_cap = 0;
 			total_time = 0;
-			update_interval = 0;
+			update_elapsed = 0;
 
 			return f;
 		}
 	}
-	else if ( update_interval > MILLIS_TO_TICKS(2000) )
+	else if ( update_elapsed > MILLIS_TO_TICKS(2000) )
 	{
 		// More than 2 seconds without a pulse; assume 0.0 Hz
 		display_freq(0.0);
 		total_cap = 0;
 		total_time = 0;
-		update_interval = 0;
+		update_elapsed = 0;
 		return 0.0;
 	}
 

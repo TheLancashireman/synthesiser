@@ -150,3 +150,12 @@ const double PROGMEM standard_freq[] =
 	11839.820,		//	126	F#9
 	12543.850		//	127	G9
 };
+
+double get_note_frequency(uint8_t note)
+{
+	double f;
+
+	memcpy_P(&f, &standard_freq[note], sizeof(f));
+
+	return f;
+}

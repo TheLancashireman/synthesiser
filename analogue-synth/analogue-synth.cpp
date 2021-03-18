@@ -89,7 +89,7 @@ int main(void)
 		elapsed = t - t0;
 		t0 = t;
 
-		(void)freq(elapsed);	// Discard the result for now
+		(void)freq(elapsed, MILLIS_TO_TICKS(1000));	// Discard the result for now
 
 		midi_in();				// Look for incoming midi messages
 	}
@@ -146,8 +146,10 @@ void display_fine(uint8_t v)
 	print_spaces(6-np);
 }
 
-void display_gate(uint8_t g)
+void display_gate(char g)
 {
+	lcd->setCursor(GATE_COL, GATE_ROW);
+	lcd->print(g);
 }
 
 static void print_spaces(uint8_t n)
