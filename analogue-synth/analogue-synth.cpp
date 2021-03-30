@@ -62,6 +62,7 @@ int main(void)
 	init_timestamp();
 	setup_dac();					// The DAC could be TC0 or TC2
 	pinMode(ICP1, INPUT_PULLUP);	// Set up the T1 input capture pin for frequency measurement
+	pinMode(gate_pin, OUTPUT);		// Set the gate pin for output
 
 	Serial.begin(115200);			// For real MIDI change this to 31250
 
@@ -103,7 +104,7 @@ void set_cv(uint8_t coarse, uint8_t fine)
 
 void set_gate(uint8_t g)
 {
-	// ToDo: Which pin?
+	digitalWrite(gate_pin, g);
 }
 
 void display_freq(double f)

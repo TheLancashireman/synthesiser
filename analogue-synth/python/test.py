@@ -10,6 +10,7 @@
 # g1   - set gate on
 # g0   - set gate off
 # t	   - start tuning
+# z    - start 1 hz gate on/off
 #
 #
 # Midi:
@@ -19,6 +20,7 @@
 
 import sys
 import serial
+import time
 
 chan = 0
 ser = serial.Serial('/dev/ttyUSB0', 115200, 8, 'N', 1)
@@ -76,6 +78,13 @@ def set_gate(v):
 	cmd = bytearray([0xb0+chan, 4, v])
 	ser.write(cmd)
 	return
+
+def gate_on_off():
+	while True:
+		set_gate(0)
+		time.sleep(0.5)
+		set_gate(1)
+		time.sleep(0.5)
 
 def start_tuning():
 	global ser
@@ -137,6 +146,8 @@ for l in sys.stdin:
 				usage()
 		elif c == 't':
 			start_tuning()
+		elif c == 'z':
+			gate_on_off()
 		else:
 			usage()
 	print('>', end=' ', flush=True)

@@ -40,13 +40,16 @@
 #error "Unsuupported DAC setting
 #endif
 
+// Gate pin
+#define gate_pin	13
+
 // LCD pin selections for nano
 #define lcd_d4		14
 #define lcd_d5		15
 #define lcd_d6		16
 #define lcd_d7		17
-#define lcd_rs		9
-#define lcd_e		13
+#define lcd_e		18
+#define lcd_rs		19
 
 // Display positions
 #define NOTE_ROW	0
