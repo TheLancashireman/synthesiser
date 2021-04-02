@@ -23,6 +23,7 @@ ISPPORT		?=	/dev/ttyUSB0
 OBJ_DIR		?=	$(BUILD)/o
 LIB_DIR		?=	$(BUILD)/a
 TLIB_DIR	?=	../../tiny-bare-metal/tinylib
+TIO_DIR		?=	../../tiny-bare-metal/tinyio
 
 GCC			=	avr-gcc
 GLD			=	avr-gcc
@@ -35,6 +36,9 @@ CC_OPT		+=	-Os
 CC_OPT		+=	-g
 CC_OPT		+=	-Wall
 CC_OPT		+=	-I $(TLIB_DIR)
+CC_OPT		+=	-I $(TIO_DIR)
+CC_OPT		+=	-D ASYNC_BITRATE=9600
+CC_OPT		+=	-D ASYNC_TX_PIN=PB0
 
 LD_OPT		+=	-mmcu=attiny85
 LD_OPT		+=	-Wl,--gc-sections
@@ -46,6 +50,8 @@ LD_LIB		+=	-lm
 
 OBJS		+=	$(OBJ_DIR)/analogue-adsr.o
 OBJS		+=	$(OBJ_DIR)/adsr.o
+OBJS		+=	$(OBJ_DIR)/gate.o
+OBJS		+=	$(OBJ_DIR)/pots.o
 
 VPATH		+=	$(TLIB_DIR)
 VPATH		+=	$(TIO_DIR)
@@ -75,4 +81,5 @@ $(BUILD)/analogue-adsr.ihex:	$(BUILD)/analogue-adsr.elf
 upload:		$(BUILD)/analogue-adsr.ihex
 	avrdude -P $(ISPPORT) -b 19200 -c avrisp -p t85 -U flash:w:build/analogue-adsr.ihex:i
 
+include $(TIO_DIR)/tinyio.make
 include $(TLIB_DIR)/tinylib.make

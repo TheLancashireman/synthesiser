@@ -1,4 +1,4 @@
-/* analogue-adsr.c - a digital adsr envelope generator for an analogue synthesiser
+/* analogue-adrs.c - a digital adsr envelope generator for an analogue synthesiser
  *
  * (c) David Haworth
  *
@@ -19,57 +19,20 @@
 */
 #include "adsr.h"
 #include "tinylib.h"
+#include "tinyadc.h"
 
-#define DEBUG_REPEAT	1
-
-// Temporary initial values for testing
-u16_t a_time = 100;
-u16_t d_time = 50;
-u16_t s_level = 128;
-u16_t r_time = 200;
-
-static u8_t dac_value;
-
-#if !DEBUG_REPEAT
-static u8_t gate_state;
-static u8_t gate_debounce;
-
-static void gate(void);
-#endif
+u8_t dac_value;
 
 static void init_dac(void);
-
-
-static void debug_gate(void)
-{
-	static u16_t dctr = 100;
-
-	if ( dctr > 0 )
-	{
-		dctr--;
-	}
-	else
-	{
-		if ( dac_value == 0 )
-		{
-			gate_on();
-			dctr = a_time + d_time + 200;	// Time for A, D and S phases
-		}
-		else
-		{
-			gate_off();
-			dctr = r_time + 100;			// Time for R phase plus a gap
-		}
-	}
-}
 
 int main(void)
 {
 	timing_init();
-	pin_mode(cvpin, OUTPUT);
-	pin_mode(gatepin, PULLUP);
-	init_dac();
 	enable();
+
+	init_gate();
+	init_dac();
+	init_pots();
 
 	u32_t then = read_time_32();
 	u32_t now;
@@ -85,56 +48,28 @@ int main(void)
 		// Maintain the ADSR state machine
 		adsr();
 
-#if DEBUG_REPEAT
-		// Initial debugging -- generate a waveform
-		debug_gate();
-#else
 		// Monitor the gate pin
-		gate();
-#endif
+		read_gate();
+
+		// Monitor the envelope parameters
+		read_pots();
 	}
 
 	return 0;
 }
 
-#if !DEBUG_REPEAT
-static void gate(void)
-{
-	if ( gate_debounce == 0 )
-	{
-		if ( pin_get(gatepin) )
-		{
-			// Pin is high --> gate signal is inactive
-			if ( gate_state != 0 )
-			{
-				gate_off();
-				gate_state = 0;
-				gate_debounce = GATE_DEBOUNCE;
-			}
-		}
-		else
-		{
-			// Pin is low --> gate signal is active
-			if ( gate_state == 0 )
-			{
-				gate_on();
-				gate_state = 1;
-				gate_debounce = GATE_DEBOUNCE;
-			}
-		}
-	}
-	else
-		gate_debounce--;
-}
-#endif
-
+/* init_dac() - intitialise the PWM D/A converter using OC1A
+*/
 static void init_dac(void)
 {
-	TCCR1 = (1 << CS10) | (1 << COM1A0) | (1 << PWM1A);		// PWM mode; set OC1A at 0, clear OC1A at match
+	pin_mode(cvpin, OUTPUT);
+	TCCR1 = (1 << CS10) | (1 << COM1A1) | (1 << PWM1A);		// PWM mode; set OC1A at 0, clear OC1A at match
 	OCR1A = 0;
 	OCR1C = 0xff;
 }
 
+/* set_dac() - set the D/A conversion value
+*/
 void set_dac(u16_t d)
 {
 	if ( d > MAX_DAC )

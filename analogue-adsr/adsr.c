@@ -21,6 +21,12 @@
 #include "tinylib.h"
 #include <avr/pgmspace.h>
 
+// Temporary initial values for testing
+u16_t a_time = 100;
+u16_t d_time = 50;
+u16_t s_level = 128;
+u16_t r_time = 200;
+
 static u8_t adsr_state;
 static u16_t adsr_timer;		// Counts ADSR_TICKS
 static u16_t r_level;			// DAC value from which release starts
@@ -44,7 +50,7 @@ void adsr(void)
 		else
 		{
 			// Round up
-			set_dac((MAX_DAC * adsr_timer + a_time - 1)/a_time);
+			set_dac(((u32_t)MAX_DAC * adsr_timer + a_time - 1)/a_time);
 		}
 		break;
 
@@ -60,7 +66,7 @@ void adsr(void)
 		else
 		{
 			// Round up
-			r_level = MAX_DAC - ((MAX_DAC - s_level) * adsr_timer + d_time - 1)/d_time;
+			r_level = MAX_DAC - (u8_t)(((u32_t)(MAX_DAC - s_level) * adsr_timer + d_time - 1)/d_time);
 			set_dac(r_level);
 		}
 		break;
@@ -81,7 +87,7 @@ void adsr(void)
 		}
 		else
 		{
-			set_dac(r_level - r_level * adsr_timer / r_time);
+			set_dac(r_level - (u8_t)((u32_t)r_level * adsr_timer / r_time));
 		}
 		break;
 
@@ -95,6 +101,10 @@ void gate_on(void)
 {
 	adsr_state = ADSR_ATTACK;
 	adsr_timer = 0;
+	a_time = a_val;
+	d_time = d_val;
+	s_level = s_val/4;
+	r_time = r_val;
 }
 
 void gate_off(void)
