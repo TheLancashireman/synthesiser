@@ -20,7 +20,7 @@
 #ifndef ADSR_H
 #define ADSR_H		1
 
-#define DEBUG_REPEAT	1
+#define DEBUG_REPEAT	0
 #define DEBUG_PRINT		0
 
 #include "tinylib.h"
