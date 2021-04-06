@@ -44,13 +44,15 @@ void adsr(void)
 		if ( adsr_timer >= a_time )
 		{
 			set_dac(MAX_DAC);
+			r_level = MAX_DAC;
 			adsr_state = ADSR_DECAY;
 			adsr_timer = 0;
 		}
 		else
 		{
 			// Round up
-			set_dac(((u32_t)MAX_DAC * adsr_timer + a_time - 1)/a_time);
+			r_level = ((u32_t)MAX_DAC * adsr_timer + a_time - 1)/a_time;
+			set_dac(r_level);
 		}
 		break;
 
