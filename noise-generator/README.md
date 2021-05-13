@@ -15,7 +15,7 @@
 
 A 64-bit LFSR generates a pseudo-random bit stream. The bit stream repeats after 2^64-1 bits.
 
-The bits have a frequency of approximately 500 kHz
+The bits have a bit rate of approximately 240 kHz when clocking the ATtiny at 9.6 MHz
 
 ## Circuit diagram
 
