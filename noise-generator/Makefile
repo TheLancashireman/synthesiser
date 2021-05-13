@@ -29,14 +29,14 @@ GLD			=	avr-gcc
 GAR			=	avr-ar
 OBJCOPY		=	avr-objcopy
 
-CC_OPT		+=	-mmcu=attiny85
+CC_OPT		+=	-mmcu=attiny13a
 CC_OPT		+=	-fno-builtin
-CC_OPT		+=	-Os
+CC_OPT		+=	-O3
 CC_OPT		+=	-g
 CC_OPT		+=	-Wall
 CC_OPT		+=	-I $(TLIB_DIR)
 
-LD_OPT		+=	-mmcu=attiny85
+LD_OPT		+=	-mmcu=attiny13a
 LD_OPT		+=	-Wl,--gc-sections
 LD_OPT		+=	-Os
 LD_OPT		+=	-L $(LIB_DIR)
@@ -72,6 +72,6 @@ $(BUILD)/noise-generator.ihex:	$(BUILD)/noise-generator.elf
 	$(OBJCOPY) -O ihex -R .eeprom $< $@
 
 upload:		$(BUILD)/noise-generator.ihex
-	avrdude -P $(ISPPORT) -b 19200 -c avrisp -p t85 -U flash:w:build/noise-generator.ihex:i
+	avrdude -P $(ISPPORT) -b 19200 -c avrisp -p t13 -U flash:w:build/noise-generator.ihex:i
 
 include $(TLIB_DIR)/tinylib.make
